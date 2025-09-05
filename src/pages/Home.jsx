@@ -1,7 +1,9 @@
 import { useState, useMemo } from "react";
-import Pill from '../components/Pill'
-import Field from '../components/Field'
-import SelectAirport from '../components/SelectAirport'
+import Pill from "../components/Pill";
+import Field from "../components/Field";
+import SelectAirport from "../components/SelectAirport";
+import Navbar from "../components/Navbar";
+import { ArrowLeftRight, Search } from "lucide-react";
 
 const SAMPLE_FLIGHTS = [
   {
@@ -175,186 +177,187 @@ export default function Home() {
   }
 
   return (
-    <main className=" mx-auto px-4 py-8">
-      <section className="mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Buscar vuelos
-          </h1>
-          <div className="flex gap-2">
-            <Pill>Rápido</Pill>
-            <Pill>Simple</Pill>
-            <Pill>Moderno</Pill>
-          </div>
-        </div>
-
-        <div className="grid md:grid-cols-[1fr_auto_1fr] gap-3 items-end bg-white border rounded-2xl p-4">
-          <Field label="Origen">
-            <SelectAirport
-              value={query.from}
-              onChange={(v) => setQuery((q) => ({ ...q, from: v }))}
-              placeholder="Seleccioná el aeropuerto"
-            />
-          </Field>
-
-          <div className="flex justify-center pb-2 md:pb-0">
-            <button
-              onClick={swap}
-              className="h-11 w-11 rounded-xl border flex items-center justify-center hover:bg-gray-50"
-              title="Invertir"
-            >
-              ↔️
-            </button>
+    <>
+      <Navbar />
+      <main className=" mx-auto px-4 py-8 font-sans">
+        <section className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h1 className="text-2xl font-semibold tracking-tight flex justify-center items-center">
+              <Search className="inline-block mr-1" strokeWidth={1} /> Buscar vuelos
+            </h1>
           </div>
 
-          <Field label="Destino">
-            <SelectAirport
-              value={query.to}
-              onChange={(v) => setQuery((q) => ({ ...q, to: v }))}
-              placeholder="Seleccioná el aeropuerto"
-            />
-          </Field>
+          <div className="grid md:grid-cols-[1fr_auto_1fr] gap-3 items-end bg-[#fbfbfb] rounded-2xl p-4 shadow-md">
+            <Field label="Origen">
+              <SelectAirport
+                value={query.from}
+                onChange={(v) => setQuery((q) => ({ ...q, from: v }))}
+                placeholder="Seleccioná el aeropuerto"
+              />
+            </Field>
 
-          <div className="grid md:grid-cols-4 grid-cols-2 gap-3 col-span-full">
-            <Field label="Fecha">
-              <input
-                type="date"
-                value={query.date}
-                onChange={(e) =>
-                  setQuery((q) => ({ ...q, date: e.target.value }))
-                }
-                className="h-11 rounded-xl border px-3 outline-none focus:ring-2 focus:ring-gray-900"
-              />
-            </Field>
-            <Field label="Cabina">
-              <select
-                value={query.cabin}
-                onChange={(e) =>
-                  setQuery((q) => ({ ...q, cabin: e.target.value }))
-                }
-                className="h-11 rounded-xl border px-3 outline-none focus:ring-2 focus:ring-gray-900"
-              >
-                <option value="">Cualquiera</option>
-                <option>Economy</option>
-                <option>Premium Economy</option>
-                <option>Business</option>
-                <option>First</option>
-              </select>
-            </Field>
-            <Field label="Aerolínea">
-              <select
-                value={query.airline}
-                onChange={(e) =>
-                  setQuery((q) => ({ ...q, airline: e.target.value }))
-                }
-                className="h-11 rounded-xl border px-3 outline-none focus:ring-2 focus:ring-gray-900"
-              >
-                <option value="">Todas</option>
-                {airlines.map((a) => (
-                  <option key={a}>{a}</option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Ordenar por">
-              <select
-                value={query.sort}
-                onChange={(e) =>
-                  setQuery((q) => ({ ...q, sort: e.target.value }))
-                }
-                className="h-11 rounded-xl border px-3 outline-none focus:ring-2 focus:ring-gray-900"
-              >
-                <option value="price">Precio</option>
-                <option value="duration">Duración</option>
-                <option value="date">Fecha</option>
-              </select>
-            </Field>
-          </div>
-
-          <div className="col-span-full grid md:grid-cols-3 gap-3">
-            <label className="flex items-center gap-3 h-11 rounded-xl border px-3 bg-white">
-              <input
-                type="checkbox"
-                checked={query.nonstop}
-                onChange={(e) =>
-                  setQuery((q) => ({ ...q, nonstop: e.target.checked }))
-                }
-              />
-              Solo vuelos directos
-            </label>
-            <div className="flex items-center gap-3 h-11 rounded-xl border px-3 bg-white">
-              <span className="text-sm text-gray-600">Precio máx:</span>
-              <input
-                type="range"
-                min="50"
-                max="1200"
-                step="10"
-                value={query.maxPrice}
-                onChange={(e) =>
-                  setQuery((q) => ({ ...q, maxPrice: Number(e.target.value) }))
-                }
-                className="w-full"
-              />
-              <span className="text-sm font-medium">${query.maxPrice}</span>
-            </div>
-            <div className="flex items-center justify-end">
+            <div className="flex justify-center pb-2 md:pb-0">
               <button
-                onClick={clearAll}
-                className="px-4 h-11 rounded-xl border hover:bg-gray-50"
+                onClick={swap}
+                className="h-11 w-11 rounded-xl border flex items-center justify-center hover:bg-primary/20 cursor-pointer transition"
+                title="Invertir"
               >
-                Limpiar
+                <ArrowLeftRight strokeWidth={1} />
               </button>
             </div>
+
+            <Field label="Destino">
+              <SelectAirport
+                value={query.to}
+                onChange={(v) => setQuery((q) => ({ ...q, to: v }))}
+                placeholder="Seleccioná el aeropuerto"
+              />
+            </Field>
+
+            <div className="grid md:grid-cols-4 grid-cols-2 gap-3 col-span-full">
+              <Field label="Fecha">
+                <input
+                  type="date"
+                  value={query.date}
+                  onChange={(e) =>
+                    setQuery((q) => ({ ...q, date: e.target.value }))
+                  }
+                  className="h-11 rounded-xl border px-3 outline-none focus:ring-2 focus:ring-gray-900"
+                />
+              </Field>
+              <Field label="Cabina">
+                <select
+                  value={query.cabin}
+                  onChange={(e) =>
+                    setQuery((q) => ({ ...q, cabin: e.target.value }))
+                  }
+                  className="h-11 rounded-xl border px-3 outline-none focus:ring-2 focus:ring-gray-900"
+                >
+                  <option value="">Cualquiera</option>
+                  <option>Economy</option>
+                  <option>Premium Economy</option>
+                  <option>Business</option>
+                  <option>First</option>
+                </select>
+              </Field>
+              <Field label="Aerolínea">
+                <select
+                  value={query.airline}
+                  onChange={(e) =>
+                    setQuery((q) => ({ ...q, airline: e.target.value }))
+                  }
+                  className="h-11 rounded-xl border px-3 outline-none focus:ring-2 focus:ring-gray-900"
+                >
+                  <option value="">Todas</option>
+                  {airlines.map((a) => (
+                    <option key={a}>{a}</option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Ordenar por">
+                <select
+                  value={query.sort}
+                  onChange={(e) =>
+                    setQuery((q) => ({ ...q, sort: e.target.value }))
+                  }
+                  className="h-11 rounded-xl border px-3 outline-none focus:ring-2 focus:ring-gray-900"
+                >
+                  <option value="price">Precio</option>
+                  <option value="duration">Duración</option>
+                  <option value="date">Fecha</option>
+                </select>
+              </Field>
+            </div>
+
+            <div className="col-span-full grid md:grid-cols-3 gap-3">
+              <label className="flex items-center gap-3 h-11 rounded-xl border px-3 bg-white">
+                <input
+                  type="checkbox"
+                  checked={query.nonstop}
+                  onChange={(e) =>
+                    setQuery((q) => ({ ...q, nonstop: e.target.checked }))
+                  }
+                />
+                Solo vuelos directos
+              </label>
+              <div className="flex items-center gap-3 h-11 rounded-xl border px-3 bg-white">
+                <span className="text-sm text-gray-600">Precio máx:</span>
+                <input
+                  type="range"
+                  min="50"
+                  max="1200"
+                  step="10"
+                  value={query.maxPrice}
+                  onChange={(e) =>
+                    setQuery((q) => ({
+                      ...q,
+                      maxPrice: Number(e.target.value),
+                    }))
+                  }
+                  className="w-full"
+                />
+                <span className="text-sm font-medium">${query.maxPrice}</span>
+              </div>
+              <div className="flex items-center justify-end">
+                <button
+                  onClick={clearAll}
+                  className="px-4 h-11 rounded-xl border hover:bg-primary/20 cursor-pointer transition"
+                >
+                  Limpiar
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">
-            Resultados ({results.length})
-          </h2>
-          <p className="text-sm text-gray-600">
-            Mostrando resultados en base a tus filtros.
-          </p>
-        </div>
+        <section className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">
+              Resultados ({results.length})
+            </h2>
+            <p className="text-sm text-gray-600">
+              Mostrando resultados en base a tus filtros.
+            </p>
+          </div>
 
-        <ul className="grid gap-3">
-          {results.map((f) => (
-            <li
-              key={f.id}
-              className="border rounded-2xl p-4 bg-white flex flex-col md:flex-row md:items-center md:justify-between gap-3"
-            >
-              <div className="flex items-center gap-4">
-                <div className="h-10 w-10 rounded-full bg-gray-900 text-white flex items-center justify-center text-sm font-semibold">
-                  {f.airline[0]}
-                </div>
-                <div>
-                  <div className="font-medium">{f.airline}</div>
-                  <div className="text-sm text-gray-600">
-                    {f.from} → {f.to} · {f.date}
+          <ul className="grid gap-3">
+            {results.map((f) => (
+              <li
+                key={f.id}
+                className="rounded-2xl p-4 bg-[#fbfbfb] flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-md"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="h-10 w-10 rounded-full bg-gray-900 text-white flex items-center justify-center text-sm font-semibold">
+                    {f.airline[0]}
+                  </div>
+                  <div>
+                    <div className="font-medium">{f.airline}</div>
+                    <div className="text-sm text-gray-600">
+                      {f.from} → {f.to} · {f.date}
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <Pill>{f.duration}</Pill>
-                <Pill>{f.stops === 0 ? "Directo" : `${f.stops} escala`}</Pill>
-                <Pill>{f.cabin}</Pill>
-                <div className="text-right">
-                  <div className="text-xl font-semibold">${f.price}</div>
-                  <button className="mt-1 text-sm px-3 py-1.5 rounded-xl bg-gray-900 text-white">
-                    Seleccionar
-                  </button>
+                <div className="flex items-center gap-4">
+                  <Pill>{f.duration}</Pill>
+                  <Pill>{f.stops === 0 ? "Directo" : `${f.stops} escala`}</Pill>
+                  <Pill>{f.cabin}</Pill>
+                  <div className="text-right">
+                    <div className="text-xl font-semibold">${f.price}</div>
+                    <button className="mt-1 text-sm px-3 py-1.5 rounded-xl bg-gray-900 text-white">
+                      Seleccionar
+                    </button>
+                  </div>
                 </div>
+              </li>
+            ))}
+            {results.length === 0 && (
+              <div className="text-center text-gray-600 py-12 border rounded-2xl bg-white">
+                No encontramos vuelos con esos filtros. Probá ajustándolos.
               </div>
-            </li>
-          ))}
-          {results.length === 0 && (
-            <div className="text-center text-gray-600 py-12 border rounded-2xl bg-white">
-              No encontramos vuelos con esos filtros. Probá ajustándolos.
-            </div>
-          )}
-        </ul>
-      </section>
-    </main>
+            )}
+          </ul>
+        </section>
+      </main>
+    </>
   );
 }
