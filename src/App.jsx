@@ -1,3 +1,4 @@
+import { AltaVuelo } from "./pages/AltaVuelo";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -18,6 +19,10 @@ export default function App() {
         <Route
           path="/contact"
           element={<Signup />}
+        />
+        <Route
+          path="/vuelos/nuevo"
+          element={<AltaVuelo />}
         />
       </Routes>
     </BrowserRouter>
