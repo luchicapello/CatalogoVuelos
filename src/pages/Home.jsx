@@ -5,7 +5,7 @@ import SelectAirport from "../components/SelectAirport";
 import Navbar from "../components/Navbar";
 import { ArrowLeftRight, Search } from "lucide-react";
 
-const SAMPLE_FLIGHTS = [
+export const SAMPLE_FLIGHTS = [
   {
     id: 1,
     from: "EZE",
