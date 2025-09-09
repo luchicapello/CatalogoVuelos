@@ -137,7 +137,7 @@ export const AltaVuelo = () => {
                         className="h-11 w-full rounded-xl border px-3 outline-none focus:ring-2 focus:ring-gray-900"
                     />
                 </Field>
-                <Field label="Porcentaje Bussiness">
+                <Field label="Porcentaje de adicion al precio categoria Bussiness">
                     <input
                         type="number"
                         value={form.porcentaje_bussiness}
@@ -163,7 +163,7 @@ export const AltaVuelo = () => {
                         className="h-11 w-full rounded-xl border px-3 outline-none focus:ring-2 focus:ring-gray-900"
                     />
                 </Field>
-                <Field label="Porcentaje Primera Clase">
+                <Field label="Porcentaje de adicion al precio Primera Clase">
                     <input
                         type="number"
                         value={form.porcentaje_primera}
