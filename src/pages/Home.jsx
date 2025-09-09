@@ -4,110 +4,11 @@ import Field from "../components/Field";
 import SelectAirport from "../components/SelectAirport";
 import Navbar from "../components/Navbar";
 import { ArrowLeftRight, Search } from "lucide-react";
-
-export const SAMPLE_FLIGHTS = [
-  {
-    id: 1,
-    from: "EZE",
-    to: "SCL",
-    date: "2025-10-10",
-    airline: "Aerolíneas Argentinas",
-    price: 210,
-    duration: "2h 15m",
-    stops: 0,
-    cabin: "Economy",
-  },
-  {
-    id: 2,
-    from: "AEP",
-    to: "GRU",
-    date: "2025-10-12",
-    airline: "LATAM",
-    price: 320,
-    duration: "3h 05m",
-    stops: 0,
-    cabin: "Economy",
-  },
-  {
-    id: 3,
-    from: "EZE",
-    to: "MIA",
-    date: "2025-11-03",
-    airline: "American Airlines",
-    price: 780,
-    duration: "9h 00m",
-    stops: 0,
-    cabin: "Premium Economy",
-  },
-  {
-    id: 4,
-    from: "EZE",
-    to: "MAD",
-    date: "2025-11-20",
-    airline: "Iberia",
-    price: 930,
-    duration: "12h 10m",
-    stops: 1,
-    cabin: "Economy",
-  },
-  {
-    id: 5,
-    from: "SCL",
-    to: "EZE",
-    date: "2025-12-01",
-    airline: "Sky Airline",
-    price: 190,
-    duration: "2h 10m",
-    stops: 0,
-    cabin: "Economy",
-  },
-  {
-    id: 6,
-    from: "GRU",
-    to: "EZE",
-    date: "2025-10-28",
-    airline: "GOL",
-    price: 260,
-    duration: "2h 25m",
-    stops: 0,
-    cabin: "Economy",
-  },
-  {
-    id: 7,
-    from: "JFK",
-    to: "MAD",
-    date: "2025-12-15",
-    airline: "Iberia",
-    price: 640,
-    duration: "7h 20m",
-    stops: 0,
-    cabin: "Economy",
-  },
-  {
-    id: 8,
-    from: "BCN",
-    to: "FCO",
-    date: "2025-10-21",
-    airline: "Vueling",
-    price: 120,
-    duration: "1h 40m",
-    stops: 0,
-    cabin: "Economy",
-  },
-  {
-    id: 9,
-    from: "LAX",
-    to: "JFK",
-    date: "2025-11-07",
-    airline: "Delta",
-    price: 410,
-    duration: "5h 30m",
-    stops: 0,
-    cabin: "Economy",
-  },
-];
+import { useNavigate } from "react-router-dom";
+import { SAMPLE_FLIGHTS } from "../data/flights";
 
 export default function Home() {
+  const navigate = useNavigate();
   const [query, setQuery] = useState({
     from: "",
     to: "",
@@ -343,7 +244,7 @@ export default function Home() {
                   <Pill>{f.cabin}</Pill>
                   <div className="text-right">
                     <div className="text-xl font-semibold">${f.price}</div>
-                    <button className="mt-1 text-sm px-3 py-1.5 rounded-xl bg-gray-900 text-white">
+                    <button className="mt-1 text-sm px-3 py-1.5 rounded-xl bg-black text-white hover:text-gray-900 hover:bg-primary/20 transition cursor-pointer" onClick={() => navigate(`/vuelos/${f.id}`)}>
                       Seleccionar
                     </button>
                   </div>

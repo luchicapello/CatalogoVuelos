@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import Field from "../components/Field";
-import { SAMPLE_FLIGHTS } from "./Home";
-import SelectAirport from "../components/SelectAirport";
+import { SAMPLE_FLIGHTS } from "../data/flights";
 import Select from "react-select";
+import { CirclePlus } from "lucide-react";
 
 
 export const AltaVuelo = () => {
@@ -46,8 +46,8 @@ export const AltaVuelo = () => {
     }
 
     return (
-        <main className="max-w-md mx-auto px-4 py-10">
-            <h1 className="text-2xl font-semibold mb-6">Nuevo Vuelo</h1>
+        <main className="max-w-md md:max-w-xl mx-auto px-4 py-10">
+            <h1 className="text-2xl font-semibold mb-6 flex items-center gap-2"><CirclePlus className="inline-block" /> Nuevo Vuelo</h1>
             <form
                 onSubmit={submit}
                 className="space-y-4 border rounded-2xl p-6 bg-white"
@@ -204,7 +204,7 @@ export const AltaVuelo = () => {
                     type="submit"
                     className="w-full h-11 rounded-xl bg-gray-900 text-white"
                 >
-                    Crear cuenta
+                    Confirmar
                 </button>
                 {msg && <p className="text-sm text-center text-gray-700">{msg}</p>}
             </form>

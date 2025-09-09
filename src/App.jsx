@@ -3,6 +3,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import DetalleVuelo from "./pages/DetalleVuelo";
 
 export default function App() {
   return (
@@ -13,16 +14,20 @@ export default function App() {
           element={<Home />}
         />
         <Route
-          path="/about"
+          path="/login"
           element={<Login />}
         />
         <Route
-          path="/contact"
+          path="/signup"
           element={<Signup />}
         />
         <Route
           path="/vuelos/nuevo"
           element={<AltaVuelo />}
+        />
+        <Route
+          path="/vuelos/:id"
+          element={<DetalleVuelo />}
         />
       </Routes>
     </BrowserRouter>
