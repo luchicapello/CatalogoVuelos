@@ -13,7 +13,7 @@ export default function Navbar() {
                 className="size-5"
             />
           </span>
-          <span className="text-primary font-semibold tracking-tight">
+          <span className="text-black font-semibold tracking-tight">
             FlyCatalog
           </span>
         </div>
