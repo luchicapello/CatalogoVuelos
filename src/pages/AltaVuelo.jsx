@@ -1,23 +1,19 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Field from "../components/Field";
-import { SAMPLE_FLIGHTS } from "../data/flights";
 import Select from "react-select";
-import { CirclePlus } from "lucide-react";
+import { CirclePlus, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { AIRPORTS, AIRLINES } from "../constants/airports";
 
 
 export const AltaVuelo = () => {
-
-    const airlines = useMemo(
-        () => Array.from(new Set(SAMPLE_FLIGHTS.map((f) => f.airline))),
-        []
-    );
-    const AIRPORTS = [
-        { value: "EZE", label: "Buenos Aires (EZE) - Ministro Pistarini" },
-        { value: "AEP", label: "Buenos Aires (AEP) - Aeroparque" },
-        { value: "SCL", label: "Santiago (SCL) - Arturo Merino Benítez" },
-        { value: "GRU", label: "São Paulo (GRU) - Guarulhos" },
-        { value: "MIA", label: "Miami (MIA) - International" }
-    ];
+    const navigate = useNavigate();
+    
+    // Convert AIRPORTS to react-select format
+    const airportOptions = AIRPORTS.map(airport => ({
+        value: airport.code,
+        label: `${airport.city} (${airport.code}) - ${airport.name}`
+    }));
     const [form, setForm] = useState({
         aerolinea: "",
         fecha_despegue: "",
@@ -38,7 +34,7 @@ export const AltaVuelo = () => {
 
     function submit(e) {
         e.preventDefault();
-        if (!form.name || !form.email || form.password.length < 6 || !form.terms) {
+        if (!form.aerolinea || !form.fecha_despegue || !form.origen || !form.destino || !form.precio || !form.despegue || !form.aterrizaje || !form.terms) {
             setMsg("Completá todos los campos y aceptá los términos.");
             return;
         }
@@ -46,21 +42,33 @@ export const AltaVuelo = () => {
     }
 
     return (
-        <main className="max-w-md md:max-w-xl mx-auto px-4 py-10">
-            <h1 className="text-2xl font-semibold mb-6 flex items-center gap-2"><CirclePlus className="inline-block" /> Nuevo Vuelo</h1>
+        <div className="bg-gray-900 min-h-screen">
+            <main className="max-w-md md:max-w-xl mx-auto px-4 py-10">
+                <div className="flex items-center gap-4 mb-6">
+                    <button
+                        onClick={() => navigate('/')}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-600 bg-gray-700 text-gray-200 hover:bg-gray-600 hover:text-white transition font-medium"
+                    >
+                        <ArrowLeft className="size-4" />
+                        Volver
+                    </button>
+                    <h1 className="text-2xl font-semibold flex items-center gap-2 text-white">
+                        <CirclePlus className="inline-block" /> Nuevo Vuelo
+                    </h1>
+                </div>
             <form
                 onSubmit={submit}
-                className="space-y-4 border rounded-2xl p-6 bg-white"
+                className="space-y-4 border border-gray-700 rounded-2xl p-6 bg-gray-800 shadow-2xl"
             >
                 <Field label="Aerolínea">
                     <select
                         value={form.aerolinea}
                         onChange={(e) => setForm((f) => ({ ...f, aerolinea: e.target.value }))}
-                        className="h-11 rounded-xl border px-3 outline-none focus:ring-2 focus:ring-gray-900"
+                        className="h-11 rounded-xl border border-gray-600 bg-gray-700 text-gray-100 px-3 outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
                     >
-                        <option value="">Todas</option>
-                        {airlines.map((a) => (
-                            <option key={a}>{a}</option>
+                        <option value="" className="bg-gray-700 text-gray-100">Seleccionar aerolínea</option>
+                        {AIRLINES.map((a) => (
+                            <option key={a} className="bg-gray-700 text-gray-100">{a}</option>
                         ))}
                     </select>
                 </Field>
@@ -69,24 +77,93 @@ export const AltaVuelo = () => {
                         type="date"
                         value={form.fecha_despegue}
                         onChange={(e) => setForm((f) => ({ ...f, fecha_despegue: e.target.value }))}
-
-                        className="h-11 w-full rounded-xl border px-3 outline-none focus:ring-2 focus:ring-gray-900"
+                        className="h-11 w-full rounded-xl border border-gray-600 bg-gray-700 text-gray-100 px-3 outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
                     />
                 </Field>
                 <Field label="Origen">
                     <Select
                         value={form.origen}
                         onChange={(e) => setForm((f) => ({ ...f, origen: e.target.value }))}
-                        options={AIRPORTS}
+                        options={airportOptions}
                         placeholder="Escribe para buscar o selecciona una opción..."
+                        styles={{
+                            control: (base) => ({
+                                ...base,
+                                backgroundColor: '#374151',
+                                borderColor: '#4B5563',
+                                color: '#F3F4F6',
+                                minHeight: '44px',
+                                borderRadius: '12px',
+                                '&:hover': {
+                                    borderColor: '#6B7280'
+                                }
+                            }),
+                            menu: (base) => ({
+                                ...base,
+                                backgroundColor: '#374151',
+                                border: '1px solid #4B5563',
+                                borderRadius: '12px'
+                            }),
+                            option: (base, state) => ({
+                                ...base,
+                                backgroundColor: state.isFocused ? '#4B5563' : '#374151',
+                                color: '#F3F4F6',
+                                '&:hover': {
+                                    backgroundColor: '#4B5563'
+                                }
+                            }),
+                            singleValue: (base) => ({
+                                ...base,
+                                color: '#F3F4F6'
+                            }),
+                            placeholder: (base) => ({
+                                ...base,
+                                color: '#9CA3AF'
+                            })
+                        }}
                     />
                 </Field>
                 <Field label="Destino">
                     <Select
                         value={form.destino}
                         onChange={(e) => setForm((f) => ({ ...f, destino: e.target.value }))}
-                        options={AIRPORTS}
+                        options={airportOptions}
                         placeholder="Escribe para buscar o selecciona una opción..."
+                        styles={{
+                            control: (base) => ({
+                                ...base,
+                                backgroundColor: '#374151',
+                                borderColor: '#4B5563',
+                                color: '#F3F4F6',
+                                minHeight: '44px',
+                                borderRadius: '12px',
+                                '&:hover': {
+                                    borderColor: '#6B7280'
+                                }
+                            }),
+                            menu: (base) => ({
+                                ...base,
+                                backgroundColor: '#374151',
+                                border: '1px solid #4B5563',
+                                borderRadius: '12px'
+                            }),
+                            option: (base, state) => ({
+                                ...base,
+                                backgroundColor: state.isFocused ? '#4B5563' : '#374151',
+                                color: '#F3F4F6',
+                                '&:hover': {
+                                    backgroundColor: '#4B5563'
+                                }
+                            }),
+                            singleValue: (base) => ({
+                                ...base,
+                                color: '#F3F4F6'
+                            }),
+                            placeholder: (base) => ({
+                                ...base,
+                                color: '#9CA3AF'
+                            })
+                        }}
                     />
                 </Field>
                 <Field label="Precio">
@@ -98,8 +175,7 @@ export const AltaVuelo = () => {
                         }
                         placeholder="Mínimo 50"
                         min={50}
-
-                        className="h-11 w-full rounded-xl border px-3 outline-none focus:ring-2 focus:ring-gray-900"
+                        className="h-11 w-full rounded-xl border border-gray-600 bg-gray-700 text-gray-100 px-3 outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
                     />
                 </Field>
                 <Field label="Hora de despegue">
@@ -110,104 +186,41 @@ export const AltaVuelo = () => {
                         onChange={(e) =>
                             setForm((f) => ({ ...f, despegue: e.target.value }))
                         }
-                        className="h-11 w-full rounded-xl border px-3 outline-none focus:ring-2 focus:ring-gray-900"
+                        className="h-11 w-full rounded-xl border border-gray-600 bg-gray-700 text-gray-100 px-3 outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
                     />
                 </Field>
-                <Field label="Hora de atrerrizaje">
+                <Field label="Hora de aterrizaje">
                     <input
                         type="time"
                         step={1}
                         value={form.aterrizaje}
                         onChange={(e) =>
-                            setForm((f) => ({ ...f, despegue: e.target.value }))
+                            setForm((f) => ({ ...f, aterrizaje: e.target.value }))
                         }
-                        className="h-11 w-full rounded-xl border px-3 outline-none focus:ring-2 focus:ring-gray-900"
+                        className="h-11 w-full rounded-xl border border-gray-600 bg-gray-700 text-gray-100 px-3 outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
                     />
                 </Field>
-                <Field label="Filas Bussiness">
-                    <input
-                        type="number"
-                        value={form.fila_bussiness}
-                        onChange={(e) =>
-                            setForm((f) => ({ ...f, fila_bussiness: e.target.value }))
-                        }
-                        placeholder="Cantidad de filas bussiness"
-                        min={1}
 
-                        className="h-11 w-full rounded-xl border px-3 outline-none focus:ring-2 focus:ring-gray-900"
-                    />
-                </Field>
-                <Field label="Porcentaje de adicion al precio categoria Bussiness">
-                    <input
-                        type="number"
-                        value={form.porcentaje_bussiness}
-                        onChange={(e) =>
-                            setForm((f) => ({ ...f, porcentaje_bussiness: e.target.value }))
-                        }
-                        placeholder="Porcentaje de recargo bussiness"
-                        min={0}
-
-                        className="h-11 w-full rounded-xl border px-3 outline-none focus:ring-2 focus:ring-gray-900"
-                    />
-                </Field>
-                <Field label="Filas Primera Clase">
-                    <input
-                        type="number"
-                        value={form.fila_primera}
-                        onChange={(e) =>
-                            setForm((f) => ({ ...f, fila_primera: e.target.value }))
-                        }
-                        placeholder="Cantidad de filas de primera clase"
-                        min={1}
-
-                        className="h-11 w-full rounded-xl border px-3 outline-none focus:ring-2 focus:ring-gray-900"
-                    />
-                </Field>
-                <Field label="Porcentaje de adicion al precio Primera Clase">
-                    <input
-                        type="number"
-                        value={form.porcentaje_primera}
-                        onChange={(e) =>
-                            setForm((f) => ({ ...f, porcentaje_primera: e.target.value }))
-                        }
-                        placeholder="Porcentaje de recargo primera clase"
-                        min={0}
-
-                        className="h-11 w-full rounded-xl border px-3 outline-none focus:ring-2 focus:ring-gray-900"
-                    />
-                </Field>
-                <Field label="Distribución de asientos">
-                    <select
-                        value={form.distribucion}
-                        onChange={(e) => setForm((f) => ({ ...f, distribucion: e.target.value }))}
-                        className="h-11 rounded-xl border px-3 outline-none focus:ring-2 focus:ring-gray-900"
-                    >
-
-                        <option value={1}>6 asientos por fila (3 asientos, pasillo, 3 asientos)</option>
-                        <option value={2}>7 asientos por fila (2 asientos, pasillo, 3 asientos, pasillo, 2 asientos) </option>
-                        <option value={3}>10 asientos por fila (3 asientos, pasillo, 4 asientos, pasillo, 3 asientos)</option>
-
-                    </select>
-                </Field>
-
-                <label className="flex items-center gap-3 text-sm">
+                <label className="flex items-center gap-3 text-sm text-gray-200">
                     <input
                         type="checkbox"
                         checked={form.terms}
                         onChange={(e) =>
                             setForm((f) => ({ ...f, terms: e.target.checked }))
                         }
+                        className="text-gray-600 focus:ring-gray-500"
                     />
                     Acepto los términos y condiciones
                 </label>
                 <button
                     type="submit"
-                    className="w-full h-11 rounded-xl bg-gray-900 text-white"
+                    className="w-full h-11 rounded-xl bg-gray-700 text-white border border-gray-600 hover:bg-gray-600 transition font-medium"
                 >
                     Confirmar
                 </button>
-                {msg && <p className="text-sm text-center text-gray-700">{msg}</p>}
+                {msg && <p className="text-sm text-center text-gray-300">{msg}</p>}
             </form>
-        </main>
+            </main>
+        </div>
     )
 }

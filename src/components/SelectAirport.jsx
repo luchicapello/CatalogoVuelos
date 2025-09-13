@@ -1,28 +1,19 @@
+import { AIRPORTS } from "../constants/airports";
+
 export default function SelectAirport({ value, onChange, placeholder }) {
-  const AIRPORTS = [
-    { code: "EZE", city: "Buenos Aires", name: "Ministro Pistarini" },
-    { code: "AEP", city: "Buenos Aires", name: "Aeroparque" },
-    { code: "SCL", city: "Santiago", name: "Arturo Merino Benítez" },
-    { code: "GRU", city: "São Paulo", name: "Guarulhos" },
-    { code: "MIA", city: "Miami", name: "International" },
-    { code: "MAD", city: "Madrid", name: "Barajas" },
-    { code: "BCN", city: "Barcelona", name: "El Prat" },
-    { code: "FCO", city: "Rome", name: "Fiumicino" },
-    { code: "JFK", city: "New York", name: "JFK" },
-    { code: "LAX", city: "Los Angeles", name: "LAX" },
-  ];
 
   return (
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="h-11 rounded-xl border px-3 outline-none focus:ring-2 focus:ring-gray-900"
+      className="h-11 rounded-xl border border-gray-600 bg-gray-700 text-gray-100 px-3 outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
     >
-      <option value="">{placeholder}</option>
+      <option value="" className="bg-gray-700 text-gray-100">{placeholder}</option>
       {AIRPORTS.map((a) => (
         <option
           key={a.code}
           value={a.code}
+          className="bg-gray-700 text-gray-100"
         >
           {a.city} ({a.code}) — {a.name}
         </option>

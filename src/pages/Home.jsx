@@ -1,11 +1,12 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Pill from "../components/Pill";
 import Field from "../components/Field";
 import SelectAirport from "../components/SelectAirport";
 import Navbar from "../components/Navbar";
 import { ArrowLeftRight, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { SAMPLE_FLIGHTS } from "../data/flights";
+import { api } from "../services/api";
+import { AIRLINES } from "../constants/airports";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -13,51 +14,104 @@ export default function Home() {
     from: "",
     to: "",
     date: "",
-    cabin: "",
-    nonstop: false,
-    maxPrice: 1000,
+    maxPrice: 200000,
     airline: "",
     sort: "price",
   });
+  const [flights, setFlights] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const airlines = useMemo(
-    () => Array.from(new Set(SAMPLE_FLIGHTS.map((f) => f.airline))),
-    []
-  );
+  // Use static airlines list instead of dynamic from API
+  const airlines = AIRLINES;
+
+  // Helper function to format flight status
+  const formatFlightStatus = (status) => {
+    const statusMap = {
+      'EN_HORA': 'En Hora',
+      'CONFIRMADO': 'Confirmado',
+      'DEMORADO': 'Demorado',
+      'CANCELADO': 'Cancelado'
+    };
+    return statusMap[status] || status;
+  };
+
+  // Helper function to get status variant for Pill
+  const getStatusVariant = (status) => {
+    const variantMap = {
+      'EN_HORA': 'success',
+      'CONFIRMADO': 'info',
+      'DEMORADO': 'warning',
+      'CANCELADO': 'error'
+    };
+    return variantMap[status] || 'default';
+  };
+
+
+  // Fetch flights on component mount
+  useEffect(() => {
+    const fetchFlights = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await api.getFlights();
+        setFlights(data); 
+      } catch (err) {
+        setError("Error al cargar los vuelos. Por favor, intenta de nuevo.");
+        console.error("Error fetching flights:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFlights();
+  }, []);
 
   const results = useMemo(() => {
-    let list = SAMPLE_FLIGHTS.filter((f) => {
-      const matchesFrom = query.from ? f.from === query.from : true;
-      const matchesTo = query.to ? f.to === query.to : true;
-      const matchesDate = query.date ? f.date === query.date : true;
-      const matchesCabin = query.cabin ? f.cabin === query.cabin : true;
-      const matchesStops = query.nonstop ? f.stops === 0 : true;
-      const matchesPrice = f.price <= query.maxPrice;
-      const matchesAirline = query.airline ? f.airline === query.airline : true;
+    if (!Array.isArray(flights)) return [];
+
+    let list = flights.filter((f) => {
+      const matchesFrom = query.from ? f.origen === query.from : true;
+      const matchesTo = query.to ? f.destino === query.to : true;
+      const matchesDate = query.date ? f.fecha === query.date : true;
+      const matchesPrice = f.precio <= query.maxPrice;
+      const matchesAirline = query.airline
+        ? f.aerolinea === query.airline
+        : true;
+      
       return (
         matchesFrom &&
         matchesTo &&
         matchesDate &&
-        matchesCabin &&
-        matchesStops &&
         matchesPrice &&
         matchesAirline
       );
     });
 
-    if (query.sort === "price") list.sort((a, b) => a.price - b.price);
-    if (query.sort === "duration")
-      list.sort((a, b) => toMinutes(a.duration) - toMinutes(b.duration));
+    if (query.sort === "price") list.sort((a, b) => a.precio - b.precio);
     if (query.sort === "date")
-      list.sort((a, b) => a.date.localeCompare(b.date));
+      list.sort((a, b) => a.fecha.localeCompare(b.fecha));
+    if (query.sort === "status") {
+      const statusOrder = { 'EN_HORA': 1, 'CONFIRMADO': 2, 'DEMORADO': 3, 'CANCELADO': 4 };
+      list.sort((a, b) => (statusOrder[a.estadoVuelo] || 5) - (statusOrder[b.estadoVuelo] || 5));
+    }
 
     return list;
-  }, [query]);
+  }, [flights, query]);
 
-  function toMinutes(d) {
-    // format: "Xh Ym"
-    const [h, m] = d.replace("m", "").split("h ");
-    return parseInt(h) * 60 + parseInt(m);
+  function toMinutes(flight) {
+    // Calculate duration from departure and arrival times
+    const departure = new Date(flight.horaDespegueUtc);
+    const arrival = new Date(flight.horaAterrizajeLocal);
+    const diffMs = arrival - departure;
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    return diffMinutes;
+  }
+
+  function formatDuration(minutes) {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours}h ${mins}m`;
   }
 
   function swap() {
@@ -69,8 +123,6 @@ export default function Home() {
       from: "",
       to: "",
       date: "",
-      cabin: "",
-      nonstop: false,
       maxPrice: 1000,
       airline: "",
       sort: "price",
@@ -80,15 +132,19 @@ export default function Home() {
   return (
     <>
       <Navbar />
-      <main className=" mx-auto px-4 py-8 font-sans">
+      <main className="mx-auto px-4 py-8 font-sans bg-gray-900 text-gray-100 min-h-screen">
         <section className="mb-6">
           <div className="flex items-center justify-between mb-3">
-            <h1 className="text-2xl font-semibold tracking-tight flex justify-center items-center">
-              <Search className="inline-block mr-1" strokeWidth={1} /> Buscar vuelos
+            <h1 className="text-2xl font-semibold tracking-tight flex justify-center items-center text-white">
+              <Search
+                className="inline-block mr-1"
+                strokeWidth={1}
+              />{" "}
+              Buscar vuelos
             </h1>
           </div>
 
-          <div className="grid md:grid-cols-[1fr_auto_1fr] gap-3 items-end bg-[#fbfbfb] rounded-2xl p-4 shadow-md">
+          <div className="grid md:grid-cols-[1fr_auto_1fr] gap-3 items-end bg-gray-800 border border-gray-700 rounded-2xl p-4 shadow-2xl">
             <Field label="Origen">
               <SelectAirport
                 value={query.from}
@@ -100,7 +156,7 @@ export default function Home() {
             <div className="flex justify-center pb-2 md:pb-0">
               <button
                 onClick={swap}
-                className="h-11 w-11 rounded-xl border flex items-center justify-center hover:bg-primary/20 cursor-pointer transition"
+                className="h-11 w-11 rounded-xl border border-gray-600 bg-gray-700 text-gray-300 flex items-center justify-center hover:bg-gray-600 hover:text-white cursor-pointer transition"
                 title="Invertir"
               >
                 <ArrowLeftRight strokeWidth={1} />
@@ -115,7 +171,7 @@ export default function Home() {
               />
             </Field>
 
-            <div className="grid md:grid-cols-4 grid-cols-2 gap-3 col-span-full">
+            <div className="grid md:grid-cols-3 grid-cols-1 gap-3 col-span-full">
               <Field label="Fecha">
                 <input
                   type="date"
@@ -123,23 +179,8 @@ export default function Home() {
                   onChange={(e) =>
                     setQuery((q) => ({ ...q, date: e.target.value }))
                   }
-                  className="h-11 rounded-xl border px-3 outline-none focus:ring-2 focus:ring-gray-900"
+                  className="h-11 rounded-xl border border-gray-600 bg-gray-700 text-gray-100 px-3 outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
                 />
-              </Field>
-              <Field label="Cabina">
-                <select
-                  value={query.cabin}
-                  onChange={(e) =>
-                    setQuery((q) => ({ ...q, cabin: e.target.value }))
-                  }
-                  className="h-11 rounded-xl border px-3 outline-none focus:ring-2 focus:ring-gray-900"
-                >
-                  <option value="">Cualquiera</option>
-                  <option>Economy</option>
-                  <option>Premium Economy</option>
-                  <option>Business</option>
-                  <option>First</option>
-                </select>
               </Field>
               <Field label="Aerolínea">
                 <select
@@ -147,7 +188,7 @@ export default function Home() {
                   onChange={(e) =>
                     setQuery((q) => ({ ...q, airline: e.target.value }))
                   }
-                  className="h-11 rounded-xl border px-3 outline-none focus:ring-2 focus:ring-gray-900"
+                  className="h-11 rounded-xl border border-gray-600 bg-gray-700 text-gray-100 px-3 outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
                 >
                   <option value="">Todas</option>
                   {airlines.map((a) => (
@@ -161,33 +202,23 @@ export default function Home() {
                   onChange={(e) =>
                     setQuery((q) => ({ ...q, sort: e.target.value }))
                   }
-                  className="h-11 rounded-xl border px-3 outline-none focus:ring-2 focus:ring-gray-900"
+                  className="h-11 rounded-xl border border-gray-600 bg-gray-700 text-gray-100 px-3 outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
                 >
                   <option value="price">Precio</option>
-                  <option value="duration">Duración</option>
                   <option value="date">Fecha</option>
+                  <option value="status">Estado</option>
                 </select>
               </Field>
             </div>
 
-            <div className="col-span-full grid md:grid-cols-3 gap-3">
-              <label className="flex items-center gap-3 h-11 rounded-xl border px-3 bg-white">
-                <input
-                  type="checkbox"
-                  checked={query.nonstop}
-                  onChange={(e) =>
-                    setQuery((q) => ({ ...q, nonstop: e.target.checked }))
-                  }
-                />
-                Solo vuelos directos
-              </label>
-              <div className="flex items-center gap-3 h-11 rounded-xl border px-3 bg-white">
-                <span className="text-sm text-gray-600">Precio máx:</span>
+            <div className="col-span-full flex flex-col md:flex-row gap-3 items-center justify-between">
+              <div className="flex items-center gap-3 h-11 rounded-xl border border-gray-600 px-4 bg-gray-700 text-gray-200 flex-1 max-w-md">
+                <span className="text-sm text-gray-300 whitespace-nowrap">Precio máx:</span>
                 <input
                   type="range"
-                  min="50"
-                  max="1200"
-                  step="10"
+                  min="200000"
+                  max="1000000"
+                  step="100000"
                   value={query.maxPrice}
                   onChange={(e) =>
                     setQuery((q) => ({
@@ -195,68 +226,101 @@ export default function Home() {
                       maxPrice: Number(e.target.value),
                     }))
                   }
-                  className="w-full"
+                  className="w-full accent-gray-500"
                 />
-                <span className="text-sm font-medium">${query.maxPrice}</span>
+                <span className="text-sm font-medium text-white whitespace-nowrap">
+                  ${query.maxPrice}
+                </span>
               </div>
-              <div className="flex items-center justify-end">
-                <button
-                  onClick={clearAll}
-                  className="px-4 h-11 rounded-xl border hover:bg-primary/20 cursor-pointer transition"
-                >
-                  Limpiar
-                </button>
-              </div>
+              <button
+                onClick={clearAll}
+                className="px-6 h-11 rounded-xl border border-gray-600 bg-gray-700 text-gray-200 hover:bg-gray-600 hover:text-white cursor-pointer transition font-medium"
+              >
+                Limpiar filtros
+              </button>
             </div>
           </div>
         </section>
 
         <section className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">
+            <h2 className="text-lg font-semibold text-white">
               Resultados ({results.length})
             </h2>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-400">
               Mostrando resultados en base a tus filtros.
             </p>
           </div>
 
-          <ul className="grid gap-3">
-            {results.map((f) => (
-              <li
-                key={f.id}
-                className="rounded-2xl p-4 bg-[#fbfbfb] flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-md"
+          {loading && (
+            <div className="text-center text-gray-400 py-12 border border-gray-700 rounded-2xl bg-gray-800">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-400 mx-auto mb-4"></div>
+              Cargando vuelos...
+            </div>
+          )}
+
+          {error && (
+            <div className="text-center text-red-400 py-12 border border-red-600 rounded-2xl bg-red-900/20">
+              <p className="mb-4">{error}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
               >
-                <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-full bg-gray-900 text-white flex items-center justify-center text-sm font-semibold">
-                    {f.airline[0]}
-                  </div>
-                  <div>
-                    <div className="font-medium">{f.airline}</div>
-                    <div className="text-sm text-gray-600">
-                      {f.from} → {f.to} · {f.date}
+                Reintentar
+              </button>
+            </div>
+          )}
+
+          {!loading && !error && (
+            <ul className="grid gap-3">
+              {results.map((f) => (
+                <li
+                  key={f.id}
+                  className="rounded-2xl p-3 sm:p-4 bg-gray-800 border border-gray-700 flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-lg hover:bg-gray-750 transition"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="h-10 w-10 rounded-full bg-gray-600 text-gray-200 flex items-center justify-center text-sm font-semibold">
+                      {f.aerolinea[0]}
+                    </div>
+                    <div>
+                      <div className="font-medium text-white">
+                        {f.aerolinea}
+                      </div>
+                      <div className="text-sm text-gray-400">
+                        {f.origen} → {f.destino} · {f.fecha}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {f.idVuelo} · {f.tipoAvion}
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <Pill>{f.duration}</Pill>
-                  <Pill>{f.stops === 0 ? "Directo" : `${f.stops} escala`}</Pill>
-                  <Pill>{f.cabin}</Pill>
-                  <div className="text-right">
-                    <div className="text-xl font-semibold">${f.price}</div>
-                    <button className="mt-1 text-sm px-3 py-1.5 rounded-xl bg-black text-white hover:text-gray-900 hover:bg-primary/20 transition cursor-pointer" onClick={() => navigate(`/vuelos/${f.id}`)}>
-                      Seleccionar
-                    </button>
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+                    <Pill>{formatDuration(toMinutes(f))}</Pill>
+                    <Pill variant={getStatusVariant(f.estadoVuelo)}>
+                      {formatFlightStatus(f.estadoVuelo)}
+                    </Pill>
+                    <Pill className="hidden sm:inline-flex">{f.capacidadAvion} asientos</Pill>
+                    <div className="text-right flex flex-col sm:block">
+                      <div className="text-lg sm:text-xl font-semibold text-white">
+                        ${f.precio.toLocaleString()}
+                      </div>
+                      <button
+                        className="mt-1 text-xs sm:text-sm px-2 sm:px-3 py-1.5 rounded-xl bg-gray-700 text-gray-200 hover:bg-gray-600 hover:text-white transition cursor-pointer border border-gray-600"
+                        onClick={() => navigate(`/vuelos/${f.id}`, { state: { flight: f } })}
+                      >
+                        Ver detalle
+                      </button>
+                    </div>
                   </div>
+                </li>
+              ))}
+              {results.length === 0 && !loading && (
+                <div className="text-center text-gray-400 py-12 border border-gray-700 rounded-2xl bg-gray-800">
+                  No encontramos vuelos con esos filtros. Probá ajustándolos.
                 </div>
-              </li>
-            ))}
-            {results.length === 0 && (
-              <div className="text-center text-gray-600 py-12 border rounded-2xl bg-white">
-                No encontramos vuelos con esos filtros. Probá ajustándolos.
-              </div>
-            )}
-          </ul>
+              )}
+            </ul>
+          )}
         </section>
       </main>
     </>
