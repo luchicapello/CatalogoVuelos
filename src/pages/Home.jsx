@@ -157,7 +157,7 @@ export default function Home() {
       from: "",
       to: "",
       date: "",
-      maxPrice: 1000,
+      maxPrice: 200000,
       airline: "",
       sort: "price",
     });
