@@ -48,6 +48,40 @@ export default function Home() {
   };
 
 
+  // Function to change flight status
+  const changeFlightStatus = async (flightId, newStatus) => {
+    try {
+      // Confirmación especial para cancelar vuelos
+      if (newStatus === 'CANCELADO') {
+        const confirmed = window.confirm('¿Estás seguro de que quieres cancelar este vuelo? Esta acción no se puede deshacer.');
+        if (!confirmed) {
+          return; // No hacer nada si el usuario cancela
+        }
+      }
+      
+      console.log(`Cambiando vuelo ${flightId} a estado: ${newStatus}`);
+      
+      // Llamada a la API para actualizar el estado
+      await api.changeFlightStatus(flightId, newStatus);
+      
+      // Actualizar el estado local después de la llamada exitosa
+      setFlights(prevFlights => 
+        prevFlights.map(flight => 
+          flight.id === flightId 
+            ? { ...flight, estadoVuelo: newStatus }
+            : flight
+        )
+      );
+      
+      console.log(`Estado del vuelo ${flightId} actualizado a: ${newStatus}`);
+    } catch (error) {
+      console.error('Error al cambiar estado del vuelo:', error);
+      // Aquí podrías mostrar un toast o mensaje de error al usuario
+      alert('Error al cambiar el estado del vuelo. Por favor, intenta de nuevo.');
+    }
+  };
+
+
   // Fetch flights on component mount
   useEffect(() => {
     const fetchFlights = async () => {
@@ -296,9 +330,33 @@ export default function Home() {
                   </div>
                   <div className="flex flex-wrap items-center gap-2 sm:gap-4">
                     <Pill>{formatDuration(toMinutes(f))}</Pill>
-                    <Pill variant={getStatusVariant(f.estadoVuelo)}>
-                      {formatFlightStatus(f.estadoVuelo)}
-                    </Pill>
+                    {f.estadoVuelo !== 'CANCELADO' ? (
+                      <select
+                        value={f.estadoVuelo}
+                        onChange={(e) => changeFlightStatus(f.id, e.target.value)}
+                        className="inline-flex items-center justify-center rounded-full border px-2 sm:px-2.5 py-1 text-xs font-medium whitespace-nowrap min-w-[80px] cursor-pointer outline-none focus:ring-2 focus:ring-blue-500"
+                        style={{
+                          backgroundColor: f.estadoVuelo === 'EN_HORA' ? '#065f46' : 
+                                         f.estadoVuelo === 'CONFIRMADO' ? '#1e3a8a' : 
+                                         f.estadoVuelo === 'DEMORADO' ? '#92400e' : '#374151',
+                          borderColor: f.estadoVuelo === 'EN_HORA' ? '#10b981' : 
+                                     f.estadoVuelo === 'CONFIRMADO' ? '#3b82f6' : 
+                                     f.estadoVuelo === 'DEMORADO' ? '#f59e0b' : '#6b7280',
+                          color: f.estadoVuelo === 'EN_HORA' ? '#6ee7b7' : 
+                                f.estadoVuelo === 'CONFIRMADO' ? '#93c5fd' : 
+                                f.estadoVuelo === 'DEMORADO' ? '#fbbf24' : '#d1d5db'
+                        }}
+                      >
+                        <option value="CONFIRMADO">Confirmado</option>
+                        <option value="EN_HORA">En Hora</option>
+                        <option value="DEMORADO">Demorado</option>
+                        <option value="CANCELADO" style={{ color: '#ef4444', fontWeight: 'bold' }}>Cancelado</option>
+                      </select>
+                    ) : (
+                      <Pill variant={getStatusVariant(f.estadoVuelo)}>
+                        {formatFlightStatus(f.estadoVuelo)}
+                      </Pill>
+                    )}
                     <Pill className="hidden sm:inline-flex">{f.capacidadAvion} asientos</Pill>
                     <div className="text-right flex flex-col sm:block">
                       <div className="text-lg sm:text-xl font-semibold text-white">

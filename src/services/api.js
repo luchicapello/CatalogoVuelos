@@ -45,14 +45,18 @@ export const api = {
     }
   },
 
-  // Get a specific flight by ID
-  async getFlightById(id) {
+  // Change flight status
+  async changeFlightStatus(id, status) {
     try {
-      const response = await apiClient.get(`/vuelos/${id}`);
+      const response = await apiClient.put(`/vuelos/${id}`, { 
+        estadoVuelo: status 
+      });
       return response.data;
     } catch (error) {
-      console.error('Error fetching flight:', error);
+      console.error('Error changing flight status:', error);
       throw error;
     }
   }
+
+
 };
