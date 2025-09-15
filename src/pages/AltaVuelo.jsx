@@ -6,48 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { AIRPORTS, AIRLINES, AVIONES } from "../constants/airports";
 import { api } from "../services/api";
 import { v4 as uuidv4 } from 'uuid';
-/*
- {
-  "idVuelo": "AA991",
-  "aerolinea": "American Airlines",
-  "fecha": "2025-11-01",
-  "origen": "EZE",
-  "destino": "MIA",
-  "precio": 230000.00,
-  "horaDespegueUtc": "2025-11-15T23:00:00Z",
-  "horaAterrizajeLocal": "2025-11-16T07:00:00-05:00",
-  "estadoVuelo": "EN_HORA",
-  "capacidadAvion": 250,
-  "tipoAvion": "Boeing 737"
-}
 
-✈ Boeing 737 → 250 pasajeros
-
-✈ Airbus A320 → 180 pasajeros
-
-✈ Boeing 787 Dreamliner → 330 pasajeros
-
-- Lo que mandamos:
-    {
-    "aerolinea": "Delta Air Lines",
-    "capacidadAvion": 330,
-    "destino": "SCL",
-    "estadoVuelo": "EN_HORA",
-    "fecha": "2025-09-23",
-    "horaAterrizajeLocal": "2025-09-23T13:50:26",
-    "horaDespegueUtc": "2025-09-23T14:50:20.000Z",
-    "idVuelo": "3c063bf7-d0b8-46d5-b237-4bca7dc37a4b",
-    "origen": "AEP",
-    "precio": 5005,
-    "tipoAvion": "Boeing 787 Dreamliner"
-    }
-- Lo que recibimos:
-  Error: {
-    code: 500
-    message: "Ocurrió un error interno"
-  }
-Request failed with status code 500
-*/
 
 
 export const AltaVuelo = () => {
@@ -81,16 +40,23 @@ export const AltaVuelo = () => {
         e.preventDefault();
         if (!form.aerolinea || !form.fecha || !form.estadoVuelo || !form.origen || !form.destino || !form.precio || !form.horaDespegueUtc || !form.horaAterrizajeLocal || !form.capacidadAvion || !form.tipoAvion) {
             console.log(form);
-            setMsg("Completá todos los campos y aceptá los términos.");
+            setMsg("Error: Completá todos los campos.");
+            return;
+        }
+        if (form.origen === form.destino) {
+            setMsg("Error: El origen y destino del vuelvo deben ser distintos.");
             return;
         }
 
+        const fechaAterrizaje = new Date(form.horaAterrizajeLocal)
+        const fechaDespegue = new Date(form.horaDespegueUtc)
+        if (fechaAterrizaje < fechaDespegue) {
+            setMsg("Error: la fecha/hora de aterrizaje no puede ser anterior a la de despegue.");
+            return;
+        }
 
-        const idVuelo = uuidv4();
-        const dataVuelo = { ...form, horaDespegueUtc: new Date(form.horaDespegueUtc).toISOString(), idVuelo }
-
-        console.log(dataVuelo);
-
+        const idVuelo = uuidv4().slice(0, 8);
+        const dataVuelo = { ...form, horaAterrizajeLocal: fechaAterrizaje.toISOString(), idVuelo, horaDespegueUtc: fechaDespegue.toISOString(), idVuelo }
 
         try {
             await api.createFlight(dataVuelo);
@@ -155,10 +121,7 @@ export const AltaVuelo = () => {
                     </Field>
                     <Field label="Origen">
                         <Select
-
                             onChange={(e) => {
-                                console.log(e.value);
-
                                 setForm((f) => ({ ...f, origen: e.value }))
                             }}
                             options={airportOptions}
@@ -203,8 +166,6 @@ export const AltaVuelo = () => {
                     <Field label="Destino">
                         <Select
                             onChange={(e) => {
-                                console.log(e.value);
-
                                 setForm((f) => ({ ...f, destino: e.value }))
                             }}
                             options={airportOptions}
