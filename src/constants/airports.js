@@ -30,3 +30,15 @@ export const AIRLINES = [
   "Iberia",
   "Copa Airlines",
 ];
+
+export const AVIONES = [
+  {
+    code: "Boeing 737", pasajeros: 250
+  },
+  {
+    code: "Airbus A320", pasajeros: 180
+  },
+  {
+    code: "Boeing 787 Dreamliner", pasajeros: 330
+  }
+]

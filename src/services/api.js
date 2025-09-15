@@ -48,15 +48,25 @@ export const api = {
   // Change flight status
   async changeFlightStatus(id, status) {
     try {
-      const response = await apiClient.put(`/vuelos/${id}`, { 
-        estadoVuelo: status 
+      const response = await apiClient.put(`/vuelos/${id}`, {
+        estadoVuelo: status
       });
       return response.data;
     } catch (error) {
       console.error('Error changing flight status:', error);
       throw error;
     }
-  }
+  },
 
+  // Cear nuevo vuelo
+  async createFlight(data) {
+    try {
+      const response = await apiClient.post(`/vuelos`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating flight:', error);
+      throw error;
+    }
+  }
 
 };
