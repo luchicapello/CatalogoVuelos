@@ -16,31 +16,16 @@ export const api = {
   // Fetch all flights
   async getFlights() {
     try {
-      const response = await apiClient.get('/vuelos/search');
+      const response = await apiClient.get('/vuelos/search', {
+        params: {
+          page: 0,
+          size: 100
+        }
+      });
+      console.log(response.data.content);
       return response.data.content;
     } catch (error) {
       console.error('Error fetching flights:', error);
-      throw error;
-    }
-  },
-
-  // Search flights with filters
-  async searchFlights(filters) {
-    try {
-      // Filter out empty values
-      const cleanFilters = Object.entries(filters).reduce((acc, [key, value]) => {
-        if (value !== '' && value !== null && value !== undefined) {
-          acc[key] = value;
-        }
-        return acc;
-      }, {});
-
-      const response = await apiClient.get('/vuelos/search', {
-        params: cleanFilters
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error searching flights:', error);
       throw error;
     }
   },
