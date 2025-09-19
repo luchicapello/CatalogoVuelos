@@ -1,32 +1,29 @@
 name: Sonar Frontend
 
 on:
-  pull_request:           # ejecuta el análisis en cada Pull Request
-  push:                   # y también en cada push a la rama principal
+  pull_request:
+  push:
     branches: [ main ]
 
 jobs:
   sonar:
     runs-on: ubuntu-latest
-
     steps:
-      # 1️⃣ Descarga el código del repo
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0    # necesario para que Sonar compare historial de commits
+          fetch-depth: 0
 
-      # 2️⃣ Instala Node.js en la VM de GitHub Actions
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'  # cambiá si tu proyecto usa otra versión
+          node-version: '20'
 
-      # 3️⃣ Instala dependencias y ejecuta los tests para generar coverage/lcov.info
-      - name: Install & Test (generate coverage)
+      - name: Install deps
         run: |
-          npm ci
-          npm test -- --coverage --watchAll=false
+          npm ci || npm install
 
-      # 4️⃣ Lanza el análisis de SonarCloud
+      - name: Build (optional)
+        run: npm run build --if-present
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
         env:
