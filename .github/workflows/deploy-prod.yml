@@ -1,0 +1,40 @@
+name: Front Deploy (prod)
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '**/*.md'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: production   # opcional: approvals manuales
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint --if-present
+
+      - name: Test
+        run: npm test --if-present
+
+      - name: SonarCloud Scan (branch)
+        uses: SonarSource/sonarcloud-github-action@v2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Trigger Vercel Deploy (prod)
+        run: curl -sS -X POST "${{ secrets.VERCEL_PROD_HOOK_URL }}"
