@@ -1,0 +1,38 @@
+name: Front CI (PR)
+
+on:
+  pull_request:
+    branches: [ preprod, main ]
+    paths-ignore:
+      - '**/*.md'
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint --if-present
+
+      - name: Test
+        run: npm test --if-present
+
+      # Análisis de PR en SonarCloud (no bloquea; el status lo maneja la app de Sonar)
+      - name: SonarCloud Scan (PR)
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: SonarSource/sonarcloud-github-action@v2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
