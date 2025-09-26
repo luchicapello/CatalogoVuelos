@@ -1,0 +1,20 @@
+name: Deploy Front to Preprod
+
+
+on:
+  push:
+    branches:
+      - preprod     # ← Solo cuando haya push/merge en la rama 'preprod'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Descarga el código del repo en el runner de GitHub Actions
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. Llama al Deploy Hook de Vercel para disparar el deploy
+      - name: Trigger Vercel Deploy Hook
+        run: curl -X POST ${{ secrets.VERCEL_PREPROD_HOOK_URL }}
