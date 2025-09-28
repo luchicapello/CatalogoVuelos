@@ -46,8 +46,9 @@ export const AltaVuelo = () => {
     origen: "",
     destino: "",
     precio: "",
-    horaDespegueUtc: "",
-    horaAterrizajeLocal: "",
+    moneda: "ARS",
+    despegue: "",
+    aterrizajeLocal: "",
     capacidadAvion: 0,
     tipoAvion: "",
   });
@@ -99,8 +100,8 @@ export const AltaVuelo = () => {
       !form.origen ||
       !form.destino ||
       form.precio === "" ||
-      !form.horaDespegueUtc ||
-      !form.horaAterrizajeLocal ||
+      !form.despegue ||
+      !form.aterrizajeLocal ||
       !form.tipoAvion ||
       !form.capacidadAvion
     ) {
@@ -119,28 +120,26 @@ export const AltaVuelo = () => {
       return setError("El origen y el destino deben ser distintos.");
 
     // fechas/reglas
-    const despegueLocal = new Date(form.horaDespegueUtc);
-    const aterrizajeLocal = new Date(form.horaAterrizajeLocal);
+    const despegueDate = new Date(form.despegue);
+    const aterrizajeDate = new Date(form.aterrizajeLocal);
     const ahora = new Date();
-    if (despegueLocal < ahora)
+    if (despegueDate < ahora)
       return setError("La hora de despegue no puede ser anterior a ahora.");
-    if (aterrizajeLocal <= despegueLocal)
+    if (aterrizajeDate <= despegueDate)
       return setError("La hora de aterrizaje debe ser mayor a la de despegue.");
 
     const idVuelo = uuidv4().slice(0, 8);
 
-    const fechaStr = toIsoNoMs(despegueLocal).slice(0, 10);
-
     const dataVuelo = {
       idVuelo,
       aerolinea: form.aerolinea,
-      fecha: fechaStr,
       origen: form.origen,
       destino: form.destino,
       estadoVuelo: "EN_HORA",
       precio: precioNumber,
-      horaDespegueUtc: toIsoNoMs(despegueLocal),
-      horaAterrizajeLocal: toIsoNoMs(aterrizajeLocal),
+      moneda: form.moneda,
+      despegue: toIsoNoMs(despegueDate),
+      aterrizajeLocal: toIsoNoMs(aterrizajeDate),
       tipoAvion: form.tipoAvion,
       capacidadAvion: capacidadNumber,
     };
@@ -155,7 +154,6 @@ export const AltaVuelo = () => {
             refresh: true,
             newFlightHint: {
               idVuelo,
-              fecha: fechaStr,
               origen: form.origen,
               destino: form.destino,
             },
@@ -260,27 +258,58 @@ export const AltaVuelo = () => {
             />
           </Field>
 
-          <Field label="Precio">
-            <input
-              type="number"
-              value={form.precio}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, precio: e.target.value }))
-              }
-              placeholder="Mínimo 50"
-              min={50}
-              className="h-11 w-full rounded-xl border border-gray-600 bg-gray-700 text-gray-100 px-3 outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
-            />
-          </Field>
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Precio">
+              <input
+                type="number"
+                value={form.precio}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, precio: e.target.value }))
+                }
+                placeholder="Mínimo 50"
+                min={50}
+                className="h-11 w-full rounded-xl border border-gray-600 bg-gray-700 text-gray-100 px-3 outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
+              />
+            </Field>
+
+            <Field label="Moneda">
+              <select
+                value={form.moneda}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, moneda: e.target.value }))
+                }
+                className="h-11 rounded-xl border border-gray-600 bg-gray-700 text-gray-100 px-3 outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
+              >
+                <option
+                  value="ARS"
+                  className="bg-gray-700 text-gray-100"
+                >
+                  ARS
+                </option>
+                <option
+                  value="USD"
+                  className="bg-gray-700 text-gray-100"
+                >
+                  USD
+                </option>
+                <option
+                  value="EUR"
+                  className="bg-gray-700 text-gray-100"
+                >
+                  EUR
+                </option>
+              </select>
+            </Field>
+          </div>
 
           <Field label="Hora de despegue (UTC)">
             <input
               type="datetime-local"
               step={1}
               min={nowLocalISO}
-              value={form.horaDespegueUtc}
+              value={form.despegue}
               onChange={(e) =>
-                setForm((f) => ({ ...f, horaDespegueUtc: e.target.value }))
+                setForm((f) => ({ ...f, despegue: e.target.value }))
               }
               className="h-11 w-full rounded-xl border border-gray-600 bg-gray-700 text-gray-100 px-3 outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
             />
@@ -290,10 +319,10 @@ export const AltaVuelo = () => {
             <input
               type="datetime-local"
               step={1}
-              min={form.horaDespegueUtc || nowLocalISO}
-              value={form.horaAterrizajeLocal}
+              min={form.despegue || nowLocalISO}
+              value={form.aterrizajeLocal}
               onChange={(e) =>
-                setForm((f) => ({ ...f, horaAterrizajeLocal: e.target.value }))
+                setForm((f) => ({ ...f, aterrizajeLocal: e.target.value }))
               }
               className="h-11 w-full rounded-xl border border-gray-600 bg-gray-700 text-gray-100 px-3 outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
             />

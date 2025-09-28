@@ -107,7 +107,9 @@ export default function Home() {
     let list = flights.filter((f) => {
       const matchesFrom = query.from ? f.origen === query.from : true;
       const matchesTo = query.to ? f.destino === query.to : true;
-      const matchesDate = query.date ? f.fecha === query.date : true;
+      // Extract date from despegue field for comparison
+      const flightDate = f.despegue ? new Date(f.despegue).toISOString().split('T')[0] : '';
+      const matchesDate = query.date ? flightDate === query.date : true;
       const matchesPrice = f.precio <= query.maxPrice;
       const matchesAirline = query.airline
         ? f.aerolinea === query.airline
@@ -124,7 +126,7 @@ export default function Home() {
 
     if (query.sort === "price") list.sort((a, b) => a.precio - b.precio);
     if (query.sort === "date")
-      list.sort((a, b) => a.fecha.localeCompare(b.fecha));
+      list.sort((a, b) => new Date(a.despegue) - new Date(b.despegue));
     if (query.sort === "status") {
       const statusOrder = { 'EN_HORA': 1, 'CONFIRMADO': 2, 'DEMORADO': 3, 'CANCELADO': 4 };
       list.sort((a, b) => (statusOrder[a.estadoVuelo] || 5) - (statusOrder[b.estadoVuelo] || 5));
@@ -135,8 +137,8 @@ export default function Home() {
 
   function toMinutes(flight) {
     // Calculate duration from departure and arrival times
-    const departure = new Date(flight.horaDespegueUtc);
-    const arrival = new Date(flight.horaAterrizajeLocal);
+    const departure = new Date(flight.despegue);
+    const arrival = new Date(flight.aterrizajeLocal);
     const diffMs = arrival - departure;
     const diffMinutes = Math.floor(diffMs / (1000 * 60));
     return diffMinutes;
@@ -321,7 +323,7 @@ export default function Home() {
                         {f.aerolinea}
                       </div>
                       <div className="text-sm text-gray-400">
-                        {f.origen} → {f.destino} · {f.fecha}
+                        {f.origen} → {f.destino} · {new Date(f.despegue).toLocaleDateString('es-ES')}
                       </div>
                       <div className="text-xs text-gray-500">
                         {f.idVuelo} · {f.tipoAvion}
@@ -336,18 +338,14 @@ export default function Home() {
                         onChange={(e) => changeFlightStatus(f.id, e.target.value)}
                         className="inline-flex items-center justify-center rounded-full border px-2 sm:px-2.5 py-1 text-xs font-medium whitespace-nowrap min-w-[80px] cursor-pointer outline-none focus:ring-2 focus:ring-blue-500"
                         style={{
-                          backgroundColor: f.estadoVuelo === 'EN_HORA' ? '#065f46' : 
-                                         f.estadoVuelo === 'CONFIRMADO' ? '#1e3a8a' : 
+                          backgroundColor: f.estadoVuelo === 'EN_HORA' ? '#065f46' :
                                          f.estadoVuelo === 'DEMORADO' ? '#92400e' : '#374151',
-                          borderColor: f.estadoVuelo === 'EN_HORA' ? '#10b981' : 
-                                     f.estadoVuelo === 'CONFIRMADO' ? '#3b82f6' : 
+                          borderColor: f.estadoVuelo === 'EN_HORA' ? '#10b981' :
                                      f.estadoVuelo === 'DEMORADO' ? '#f59e0b' : '#6b7280',
-                          color: f.estadoVuelo === 'EN_HORA' ? '#6ee7b7' : 
-                                f.estadoVuelo === 'CONFIRMADO' ? '#93c5fd' : 
+                          color: f.estadoVuelo === 'EN_HORA' ? '#6ee7b7' :
                                 f.estadoVuelo === 'DEMORADO' ? '#fbbf24' : '#d1d5db'
                         }}
                       >
-                        <option value="CONFIRMADO">Confirmado</option>
                         <option value="EN_HORA">En Hora</option>
                         <option value="DEMORADO">Demorado</option>
                         <option value="CANCELADO" style={{ color: '#ef4444', fontWeight: 'bold' }}>Cancelado</option>
@@ -360,7 +358,7 @@ export default function Home() {
                     <Pill className="hidden sm:inline-flex">{f.capacidadAvion} asientos</Pill>
                     <div className="text-right flex flex-col sm:block">
                       <div className="text-lg sm:text-xl font-semibold text-white">
-                        ${f.precio.toLocaleString()}
+                        {f.moneda} {f.precio.toLocaleString()}
                       </div>
                       <button
                         className="mt-1 text-xs sm:text-sm px-2 sm:px-3 py-1.5 rounded-xl bg-gray-700 text-gray-200 hover:bg-gray-600 hover:text-white transition cursor-pointer border border-gray-600"

@@ -8,10 +8,10 @@ export default function DetalleVuelo() {
   const flight = location.state?.flight;
 
   // Helper function to calculate duration
-  const calculateDuration = (departureUtc, arrivalLocal) => {
-    const departure = new Date(departureUtc);
-    const arrival = new Date(arrivalLocal);
-    const diffMs = arrival - departure;
+  const calculateDuration = (departure, arrival) => {
+    const departureDate = new Date(departure);
+    const arrivalDate = new Date(arrival);
+    const diffMs = arrivalDate - departureDate;
     const hours = Math.floor(diffMs / (1000 * 60 * 60));
     const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
     return `${hours}h ${minutes}m`;
@@ -92,7 +92,7 @@ export default function DetalleVuelo() {
               <div>
                 <h1 className="text-2xl font-semibold leading-tight text-gray-100">{flight.aerolinea}</h1>
                 <p className="text-sm text-gray-400">
-                  {flight.origen} → {flight.destino} · {formatDate(flight.fecha)}
+                  {flight.origen} → {flight.destino} · {formatDate(flight.despegue)}
                 </p>
                 <p className="text-xs text-gray-500">
                   Vuelo: {flight.idVuelo}
@@ -100,13 +100,13 @@ export default function DetalleVuelo() {
               </div>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-semibold text-gray-100">${flight.precio.toLocaleString()}</div>
+              <div className="text-2xl font-semibold text-gray-100">{flight.moneda} {flight.precio.toLocaleString()}</div>
               <div className="text-xs text-gray-400">por pasajero</div>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <Pill>{calculateDuration(flight.horaDespegueUtc, flight.horaAterrizajeLocal)}</Pill>
+            <Pill>{calculateDuration(flight.despegue, flight.aterrizajeLocal)}</Pill>
             <Pill>{flight.tipoAvion}</Pill>
             <Pill variant={getStatusVariant(flight.estadoVuelo)}>
               {formatFlightStatus(flight.estadoVuelo)}
@@ -118,14 +118,14 @@ export default function DetalleVuelo() {
               <div className="text-sm text-gray-400">Origen</div>
               <div className="font-medium text-lg text-gray-100">{flight.origen}</div>
               <div className="text-sm text-gray-400">
-                Despegue: {formatTime(flight.horaDespegueUtc)} UTC
+                Despegue: {formatTime(flight.despegue)} UTC
               </div>
             </div>
             <div className="border border-gray-600 rounded-2xl bg-gray-700 p-4">
               <div className="text-sm text-gray-400">Destino</div>
               <div className="font-medium text-lg text-gray-100">{flight.destino}</div>
               <div className="text-sm text-gray-400">
-                Aterrizaje: {formatTime(flight.horaAterrizajeLocal)} Local
+                Aterrizaje: {formatTime(flight.aterrizajeLocal)} Local
               </div>
             </div>
           </div>
@@ -133,7 +133,7 @@ export default function DetalleVuelo() {
           <div className="grid md:grid-cols-2 gap-4">
             <div className="border border-gray-600 rounded-2xl bg-gray-700 p-4">
               <div className="text-sm text-gray-400">Fecha</div>
-              <div className="font-medium text-lg text-gray-100">{formatDate(flight.fecha)}</div>
+              <div className="font-medium text-lg text-gray-100">{formatDate(flight.despegue)}</div>
             </div>
             <div className="border border-gray-600 rounded-2xl bg-gray-700 p-4">
               <div className="text-sm text-gray-400">Capacidad</div>

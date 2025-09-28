@@ -22,6 +22,7 @@ export const api = {
           size: 100
         }
       });
+      console.log(response.data.content);
       return response.data.content;
     } catch (error) {
       console.error('Error fetching flights:', error);
