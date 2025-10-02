@@ -3,7 +3,7 @@ import { vi } from 'vitest';
 
 // Mock window.confirm for tests
 global.confirm = vi.fn(() => true);
-
+//prueba 
 // Mock window.alert for tests
 global.alert = vi.fn();
 
