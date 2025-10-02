@@ -7,8 +7,13 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   test: {
     globals: true,
-    environment: 'jsdom',
-    setupFiles: ['./src/test/setup.js'],
+    environment: "jsdom",
+    setupFiles: ["./src/test/setup.js"],
     css: true,
+    coverage: {
+      reporter: ["text", "lcov", "cobertura"],
+      reportsDirectory: "./coverage",
+    },
   },
 });
+
