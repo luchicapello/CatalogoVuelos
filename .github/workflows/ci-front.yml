@@ -18,29 +18,34 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 
+          fetch-depth: 0  # Recomendado para SonarCloud (PR decoration)
 
+      # 1. Instalar pnpm primero
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      # 2. Configurar Node con cache para pnpm
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: pnpm
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 9
-
+      # 3. Instalar dependencias
       - name: Install deps
         run: pnpm install --frozen-lockfile
 
+      # 4. Lint
       - name: Lint
         run: pnpm run lint --if-present
 
+      # 5. Tests con Vitest + coverage
       - name: Test (Vitest) with coverage
         run: pnpm test --coverage --run
 
-     
+      # 6. (Opcional) guardar cobertura como artefacto
       - name: Upload coverage artifact
         if: always()
         uses: actions/upload-artifact@v4
@@ -48,10 +53,14 @@ jobs:
           name: coverage
           path: coverage/
 
+      # 7. Análisis en SonarCloud
       - name: SonarCloud Scan (PR)
         if: ${{ github.event_name == 'pull_request' }}
         uses: SonarSource/sonarcloud-github-action@v2
         env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
