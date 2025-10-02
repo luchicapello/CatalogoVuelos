@@ -1,7 +1,11 @@
-name: Front CI (PR)
+name: Front CI (PR & Push)
 
 on:
   pull_request:
+    branches: [ preprod, main ]
+    paths-ignore:
+      - "**/*.md"
+  push:
     branches: [ preprod, main ]
     paths-ignore:
       - "**/*.md"
@@ -9,6 +13,11 @@ on:
 permissions:
   contents: read
   pull-requests: read
+
+# (Opcional) cancela runs anteriores en la misma rama
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   ci:
@@ -46,10 +55,10 @@ jobs:
           name: coverage
           path: coverage/
 
-      - name: SonarCloud Scan (PR)
-        if: ${{ github.event_name == 'pull_request' }}
+      - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
