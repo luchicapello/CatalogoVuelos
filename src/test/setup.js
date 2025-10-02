@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
-
+// prueba
 // Mock window.confirm for tests
 globalThis.confirm = vi.fn(() => true);
 
