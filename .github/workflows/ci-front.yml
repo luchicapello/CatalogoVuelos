@@ -1,62 +1,55 @@
-name: Front CI (PR & Push)
+name: Front CI
 
 on:
-  pull_request:
-    branches: [ preprod, main ]
-    paths-ignore:
-      - "**/*.md"
   push:
-    branches: [ preprod, main ]
+    branches: [ main, preprod ]
     paths-ignore:
-      - "**/*.md"
-
-permissions:
-  contents: read
-  pull-requests: read
-
-# (Opcional) cancela runs anteriores en la misma rama
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+      - '**/*.md'
+  pull_request:
+    branches: [ main, preprod ]
+    paths-ignore:
+      - '**/*.md'
 
 jobs:
   ci:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 9
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm
+          cache: 'npm'
 
-      - name: Install deps
-        run: pnpm install --frozen-lockfile
+      - name: Install
+        run: npm ci
 
       - name: Lint
-        run: pnpm run lint
+        run: npm run lint --if-present
 
-      - name: Test (Vitest) with coverage
-        run: pnpm run test:coverage
+      # ⚠️ Genera cobertura SIEMPRE (para push y PR)
+      # Asegurate de tener un script "test:cov": "vitest --run --coverage"
+      - name: Test (coverage)
+        run: npm run test:cov --if-present
 
-      - name: Upload coverage artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage
-          path: coverage/
-
+      # SonarCloud: funciona tanto para push como PR (auto-detecta el contexto)
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Si TENÉS sonar-project.properties, podés omitir args.
+          # Si NO lo tenés, define acá tus propiedades mínimas:
+          args: >
+            -Dsonar.projectKey=TU_PROJECT_KEY
+            -Dsonar.organization=TU_ORG_KEY
+            -Dsonar.sources=src
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
