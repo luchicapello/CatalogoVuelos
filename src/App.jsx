@@ -4,10 +4,34 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import DetalleVuelo from "./pages/DetalleVuelo";
+import { Provider, useDispatch } from "react-redux";
+import store from "./redux/store";
+import { authCheckComplete, setAuthStatus } from "./redux/authSlice";
+import { useEffect } from "react";
+
+
+// Función para verificar si el usuario está logueado.
+const checkAuthStatus = (dispatch) => {
+  const token = localStorage.getItem('authToken');
+  const user = JSON.parse(localStorage.getItem('user'))
+  if (token) {
+    dispatch(setAuthStatus({ token, user }))
+  } else {
+    dispatch(authCheckComplete());
+  }
+}
 
 export default function App() {
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    checkAuthStatus(dispatch)
+  }, [dispatch])
+
   return (
     <BrowserRouter>
+
       <Routes>
         <Route
           path="/"
@@ -30,6 +54,7 @@ export default function App() {
           element={<DetalleVuelo />}
         />
       </Routes>
+
     </BrowserRouter>
   );
 }
