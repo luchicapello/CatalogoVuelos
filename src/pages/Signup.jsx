@@ -61,7 +61,7 @@ export default function Signup() {
     if (registerSuccess) {
       setMsg('Usuario registrado exitosamente, redireccionado..')
       const timer = setTimeout(() => {
-        navigate('/login')
+        navigate('/')
       }, 1000);
 
       return () => {
