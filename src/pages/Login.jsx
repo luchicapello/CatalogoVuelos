@@ -32,7 +32,7 @@ export default function Login() {
     if (isAuthenticated) {
       setMsg('Usuario Logueado exitosamente, redireccionado..')
       const timer = setTimeout(() => {
-        navigate('/')
+        navigate('/home')
       }, 2000);
 
       return () => {
