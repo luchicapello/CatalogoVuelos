@@ -180,7 +180,7 @@ export default function Signup() {
 
         {error && <p className="text-sm text-center text-red-700">{error}</p>}
         {msg && <p className="text-sm text-center text-gray-700">{msg}</p>}
-        <p>Ya estás registrado? <Link to="/login" className="text-blue-600 hover:text-blue-300">Ingresa</Link></p>
+        <p>Ya estás registrado? <Link to="/" className="text-blue-600 hover:text-blue-300">Ingresa</Link></p>
 
       </form>
     </main>
