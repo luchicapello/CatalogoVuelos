@@ -17,7 +17,7 @@ export default function Navbar() {
         </div>
         <nav className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
           {[
-            { key: "/", label: "Buscar Vuelos", shortLabel: "Buscar" },
+            { key: "/home", label: "Buscar Vuelos", shortLabel: "Buscar" },
             { key: "/vuelos/nuevo", label: "Alta de Vuelos", shortLabel: "Alta" }
           ].map((t) => (
             <button

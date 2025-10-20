@@ -47,6 +47,8 @@ export default function Home() {
     return variantMap[status] || 'default';
   };
 
+  
+
 
   // Function to change flight status
   const changeFlightStatus = async (flightId, newStatus) => {
@@ -58,21 +60,21 @@ export default function Home() {
           return; // No hacer nada si el usuario cancela
         }
       }
-      
+
       console.log(`Cambiando vuelo ${flightId} a estado: ${newStatus}`);
-      
+
       // Llamada a la API para actualizar el estado
       await api.changeFlightStatus(flightId, newStatus);
-      
+
       // Actualizar el estado local después de la llamada exitosa
-      setFlights(prevFlights => 
-        prevFlights.map(flight => 
-          flight.id === flightId 
+      setFlights(prevFlights =>
+        prevFlights.map(flight =>
+          flight.id === flightId
             ? { ...flight, estadoVuelo: newStatus }
             : flight
         )
       );
-      
+
       console.log(`Estado del vuelo ${flightId} actualizado a: ${newStatus}`);
     } catch (error) {
       console.error('Error al cambiar estado del vuelo:', error);
@@ -89,7 +91,7 @@ export default function Home() {
         setLoading(true);
         setError(null);
         const data = await api.getFlights();
-        setFlights(data); 
+        setFlights(data);
       } catch (err) {
         setError("Error al cargar los vuelos. Por favor, intenta de nuevo.");
         console.error("Error fetching flights:", err);
@@ -114,7 +116,7 @@ export default function Home() {
       const matchesAirline = query.airline
         ? f.aerolinea === query.airline
         : true;
-      
+
       return (
         matchesFrom &&
         matchesTo &&
@@ -332,6 +334,11 @@ export default function Home() {
                   </div>
                   <div className="flex flex-wrap items-center gap-2 sm:gap-4">
                     <Pill>{formatDuration(toMinutes(f))}</Pill>
+
+                    <Pill variant={getStatusVariant(f.estadoVuelo)}>
+                      {formatFlightStatus(f.estadoVuelo)}
+                    </Pill>
+                    {/*
                     {f.estadoVuelo !== 'CANCELADO' ? (
                       <select
                         value={f.estadoVuelo}
@@ -355,6 +362,8 @@ export default function Home() {
                         {formatFlightStatus(f.estadoVuelo)}
                       </Pill>
                     )}
+                    */
+                    }
                     <Pill className="hidden sm:inline-flex">{f.capacidadAvion} asientos</Pill>
                     <div className="text-right flex flex-col sm:block">
                       <div className="text-lg sm:text-xl font-semibold text-white">

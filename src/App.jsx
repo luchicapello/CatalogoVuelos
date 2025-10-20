@@ -8,6 +8,7 @@ import { Provider, useDispatch } from "react-redux";
 import store from "./redux/store";
 import { authCheckComplete, setAuthStatus } from "./redux/authSlice";
 import { useEffect } from "react";
+import { ProtectedRoutes } from "./components/ProtectedRoutes";
 
 
 // Función para verificar si el usuario está logueado.
@@ -33,26 +34,35 @@ export default function App() {
     <BrowserRouter>
 
       <Routes>
+        { /* Rutas publicas */}
         <Route
           path="/"
           element={<Login />}
         />
         <Route
-          path="/home"
-          element={<Home />}
-        />
-        <Route
           path="/signup"
           element={<Signup />}
         />
-        <Route
-          path="/vuelos/nuevo"
-          element={<AltaVuelo />}
-        />
-        <Route
-          path="/vuelos/:id"
-          element={<DetalleVuelo />}
-        />
+
+
+        { /* Rutas protegidas */}
+        <Route element={<ProtectedRoutes />}>
+          <Route
+            path="/home"
+            element={<Home />}
+          />
+          <Route
+            path="/vuelos/nuevo"
+            element={<AltaVuelo />}
+          />
+          <Route
+            path="/vuelos/:id"
+            element={<DetalleVuelo />}
+          />
+        </Route>
+
+
+
       </Routes>
 
     </BrowserRouter>
