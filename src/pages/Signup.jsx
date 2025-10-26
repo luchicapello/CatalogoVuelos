@@ -68,7 +68,7 @@ export default function Signup() {
         clearTimeout(timer);
       }
     }
-  }, [registerSuccess])
+  }, [registerSuccess, navigate])
 
 
   return (

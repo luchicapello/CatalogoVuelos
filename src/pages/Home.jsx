@@ -50,38 +50,6 @@ export default function Home() {
   
 
 
-  // Function to change flight status
-  const changeFlightStatus = async (flightId, newStatus) => {
-    try {
-      // Confirmación especial para cancelar vuelos
-      if (newStatus === 'CANCELADO') {
-        const confirmed = window.confirm('¿Estás seguro de que quieres cancelar este vuelo? Esta acción no se puede deshacer.');
-        if (!confirmed) {
-          return; // No hacer nada si el usuario cancela
-        }
-      }
-
-      console.log(`Cambiando vuelo ${flightId} a estado: ${newStatus}`);
-
-      // Llamada a la API para actualizar el estado
-      await api.changeFlightStatus(flightId, newStatus);
-
-      // Actualizar el estado local después de la llamada exitosa
-      setFlights(prevFlights =>
-        prevFlights.map(flight =>
-          flight.id === flightId
-            ? { ...flight, estadoVuelo: newStatus }
-            : flight
-        )
-      );
-
-      console.log(`Estado del vuelo ${flightId} actualizado a: ${newStatus}`);
-    } catch (error) {
-      console.error('Error al cambiar estado del vuelo:', error);
-      // Aquí podrías mostrar un toast o mensaje de error al usuario
-      alert('Error al cambiar el estado del vuelo. Por favor, intenta de nuevo.');
-    }
-  };
 
 
   // Fetch flights on component mount

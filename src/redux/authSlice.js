@@ -23,7 +23,6 @@ export const loginUser = createAsyncThunk(
             const token = response.data.data.token;
             const user = response.data.data.user;
 
-            const fakeToken = 'asdasdasdasdasd'
             // Guardar el token en el LocalStorage
             localStorage.setItem('authToken', token)
             localStorage.setItem('user', JSON.stringify(user))

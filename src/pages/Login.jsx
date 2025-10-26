@@ -39,7 +39,7 @@ export default function Login() {
         clearTimeout(timer);
       }
     }
-  }, [isAuthenticated])
+  }, [isAuthenticated, navigate])
 
   return (
     <main className="max-w-md mx-auto px-4 py-10 flex items-center justify-center flex-col h-lvh">

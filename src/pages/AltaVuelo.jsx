@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   CheckCircle2,
   AlertTriangle,
+  Loader2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AIRPORTS, AIRLINES, AVIONES, AIRLINE_ABBREVIATIONS } from "../constants/airports";
@@ -53,6 +54,7 @@ export const AltaVuelo = () => {
   });
 
   const [msg, setMsg] = useState({ type: "", text: "" });
+  const [isLoading, setIsLoading] = useState(false);
   const setError = (t) => setMsg({ type: "error", text: t });
   const setOk = (t) => setMsg({ type: "ok", text: t });
 
@@ -92,6 +94,7 @@ export const AltaVuelo = () => {
   async function submit(e) {
     e.preventDefault();
     setMsg({ type: "", text: "" });
+    setIsLoading(true);
 
     // requeridos
     if (
@@ -104,28 +107,39 @@ export const AltaVuelo = () => {
       !form.tipoAvion ||
       !form.capacidadAvion
     ) {
+      setIsLoading(false);
       return setError("Completá todos los campos.");
     }
 
     // numéricos
     const precioNumber = Number(form.precio);
     const capacidadNumber = Number(form.capacidadAvion || 0);
-    if (Number.isNaN(precioNumber) || precioNumber < 50)
+    if (Number.isNaN(precioNumber) || precioNumber < 50) {
+      setIsLoading(false);
       return setError("El precio debe ser un número válido (mínimo 50).");
-    if (!Number.isFinite(capacidadNumber) || capacidadNumber <= 0)
+    }
+    if (!Number.isFinite(capacidadNumber) || capacidadNumber <= 0) {
+      setIsLoading(false);
       return setError("Capacidad de avión inválida.");
+    }
 
-    if (form.origen === form.destino)
+    if (form.origen === form.destino) {
+      setIsLoading(false);
       return setError("El origen y el destino deben ser distintos.");
+    }
 
     // fechas/reglas
     const despegueDate = new Date(form.despegue);
     const aterrizajeDate = new Date(form.aterrizajeLocal);
     const ahora = new Date();
-    if (despegueDate < ahora)
+    if (despegueDate < ahora) {
+      setIsLoading(false);
       return setError("La hora de despegue no puede ser anterior a ahora.");
-    if (aterrizajeDate <= despegueDate)
+    }
+    if (aterrizajeDate <= despegueDate) {
+      setIsLoading(false);
       return setError("La hora de aterrizaje debe ser mayor a la de despegue.");
+    }
 
     const idVuelo = AIRLINE_ABBREVIATIONS[form.aerolinea] || "XX";
     
@@ -169,6 +183,8 @@ export const AltaVuelo = () => {
         error?.message ||
         "desconocido";
       setError(`Ha ocurrido un error: ${serverMsg}`);
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -350,9 +366,21 @@ export const AltaVuelo = () => {
 
           <button
             type="submit"
-            className="w-full h-11 rounded-xl bg-gray-700 text-white border border-gray-600 hover:bg-gray-600 transition font-medium"
+            disabled={isLoading}
+            className={`w-full h-11 rounded-xl border transition font-medium flex items-center justify-center gap-2 ${
+              isLoading
+                ? "bg-gray-600 text-gray-400 border-gray-700 cursor-not-allowed"
+                : "bg-gray-700 text-white border-gray-600 hover:bg-gray-600"
+            }`}
           >
-            Confirmar
+            {isLoading ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Creando vuelo...
+              </>
+            ) : (
+              "Confirmar"
+            )}
           </button>
 
           {msg.text && (

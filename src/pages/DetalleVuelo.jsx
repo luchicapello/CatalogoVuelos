@@ -3,6 +3,7 @@ import Navbar from "../components/Navbar";
 import Pill from "../components/Pill";
 import { useState } from "react";
 import { api } from "../services/api";
+import { Loader2 } from "lucide-react";
 
 export default function DetalleVuelo() {
   const navigate = useNavigate();
@@ -82,6 +83,7 @@ export default function DetalleVuelo() {
       if (newStatus === 'CANCELADO') {
         const confirmed = window.confirm('¿Estás seguro de que quieres cancelar este vuelo? Esta acción no se puede deshacer.');
         if (!confirmed) {
+          setIsLoading(false);
           return; // No hacer nada si el usuario cancela
         }
       }
@@ -91,13 +93,17 @@ export default function DetalleVuelo() {
       // Llamada a la API para actualizar el estado
       const response = await api.changeFlightStatus(flightId, newStatus);
       console.log(response);
-      setIsLoading(false)
+      
+      // Actualizar el estado del vuelo original y ocultar el botón
+      flight.estadoVuelo = newStatus;
+      setShowBtnSave(false);
+      setIsLoading(false);
       console.log(`Estado del vuelo ${flightId} actualizado a: ${newStatus}`);
     } catch (error) {
       console.error('Error al cambiar estado del vuelo:', error);
       // Aquí podrías mostrar un toast o mensaje de error al usuario
       alert('Error al cambiar el estado del vuelo. Por favor, intenta de nuevo.');
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
   if (!flight) {
@@ -181,7 +187,26 @@ export default function DetalleVuelo() {
 
             {
               showBtnSave &&
-              <Pill><button onClick={(e) => confirmSaveStatus()} className="hover:opacity-70 hover:cursor-pointer"> {isLoading ? 'Cargando' : 'Guardar'}</button></Pill>
+              <Pill>
+                <button 
+                  onClick={() => confirmSaveStatus()} 
+                  disabled={isLoading}
+                  className={`flex items-center gap-2 px-2 py-1 rounded-full text-xs font-medium transition ${
+                    isLoading 
+                      ? 'opacity-50 cursor-not-allowed' 
+                      : 'hover:opacity-70 hover:cursor-pointer'
+                  }`}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="size-3 animate-spin" />
+                      Guardando...
+                    </>
+                  ) : (
+                    'Guardar'
+                  )}
+                </button>
+              </Pill>
             }
 
           </div>
