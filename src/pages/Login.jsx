@@ -42,52 +42,52 @@ export default function Login() {
   }, [isAuthenticated, navigate])
 
   return (
-    <main className="max-w-md mx-auto px-4 py-10 flex items-center justify-center flex-col h-lvh">
-      <h1 className="text-2xl font-semibold mb-6">Iniciar sesión</h1>
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-4 border rounded-2xl p-6 bg-white w-lg"
-      >
+    <div className="bg-gray-900 min-h-screen">
+      <main className="max-w-md mx-auto px-4 py-10 flex items-center justify-center flex-col min-h-screen">
+        <h1 className="text-2xl font-semibold mb-6 text-white">Iniciar sesión</h1>
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4 border border-gray-700 rounded-2xl p-6 bg-gray-800 shadow-2xl w-full"
+        >
         <Field label="Email">
-          <label htmlFor="">Email</label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="tu@email.com"
-            className="h-11 w-full rounded-xl border px-3 outline-none focus:ring-2 focus:ring-gray-900"
+            className="h-11 w-full rounded-xl border border-gray-600 bg-gray-700 text-gray-100 px-3 outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
           />
         </Field>
         <Field label="Contraseña">
-          <label htmlFor="">Password</label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            className="h-11 w-full rounded-xl border px-3 outline-none focus:ring-2 focus:ring-gray-900"
+            className="h-11 w-full rounded-xl border border-gray-600 bg-gray-700 text-gray-100 px-3 outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
           />
         </Field>
         {
           loading
             ?
-            <p>Cargando..</p>
+            <p className="text-gray-300">Cargando..</p>
             :
             <button
               type="submit"
-              className="w-full h-11 rounded-xl bg-gray-900 text-white"
+              className="w-full h-11 rounded-xl bg-gray-700 text-white border border-gray-600 hover:bg-gray-600 transition font-medium"
             >
               Entrar
             </button>
 
         }
 
-        {error && <p className="text-sm text-center text-red-700">{error}</p>}
-        {msg && <p className="text-sm text-center text-gray-700">{msg}</p>}
+        {error && <p className="text-sm text-center text-red-400">{error}</p>}
+        {msg && <p className="text-sm text-center text-gray-300">{msg}</p>}
 
-        <p>No estás registrado? <Link to="/signup" className="text-blue-600 hover:text-blue-300">Registrate</Link></p>
+        <p className="text-gray-300">No estás registrado? <Link to="/signup" className="text-blue-400 hover:text-blue-300">Registrate</Link></p>
 
       </form>
-    </main>
+      </main>
+    </div>
   );
 }
