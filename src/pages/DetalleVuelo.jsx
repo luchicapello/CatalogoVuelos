@@ -109,7 +109,7 @@ export default function DetalleVuelo() {
             <h1 className="text-2xl font-semibold mb-2 text-gray-100">Vuelo no encontrado</h1>
             <p className="text-gray-400 mb-6">No se pudo obtener la información del vuelo.</p>
             <button
-              onClick={() => navigate('/home')}
+              onClick={() => navigate(-1)}
               className="px-4 h-11 rounded-xl border border-gray-600 bg-gray-700 text-gray-100 hover:bg-gray-600 cursor-pointer transition"
             >
               Volver
@@ -216,7 +216,7 @@ export default function DetalleVuelo() {
 
           <div className="flex items-center justify-between gap-3">
             <button
-              onClick={() => navigate('/home')}
+              onClick={() => navigate(-1)}
               className="px-4 h-11 rounded-xl border border-gray-600 bg-gray-700 text-gray-100 hover:bg-gray-600 cursor-pointer transition"
             >
               Volver

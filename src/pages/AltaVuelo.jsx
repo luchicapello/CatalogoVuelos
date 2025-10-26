@@ -8,8 +8,9 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { AIRPORTS, AIRLINES, AVIONES, AIRLINE_ABBREVIATIONS } from "../constants/airports";
+import { AIRPORTS, AIRLINES, AVIONES } from "../constants/airports";
 import { api } from "../services/api";
+import { v4 as uuidv4 } from "uuid";
 
 export const AltaVuelo = () => {
   const navigate = useNavigate();
@@ -127,8 +128,8 @@ export const AltaVuelo = () => {
     if (aterrizajeDate <= despegueDate)
       return setError("La hora de aterrizaje debe ser mayor a la de despegue.");
 
-    const idVuelo = AIRLINE_ABBREVIATIONS[form.aerolinea] || "XX";
-    
+    const idVuelo = uuidv4().slice(0, 8);
+
     const dataVuelo = {
       idVuelo,
       aerolinea: form.aerolinea,
@@ -144,10 +145,11 @@ export const AltaVuelo = () => {
     };
 
     try {
+      console.log("createFlight payload:", dataVuelo);
       await api.createFlight(dataVuelo);
       setOk("¡Vuelo creado con éxito! Te llevamos al inicio…");
       setTimeout(() => {
-        navigate("/home", {
+        navigate("/", {
           state: {
             refresh: true,
             newFlightHint: {

@@ -31,29 +31,15 @@ export const AIRLINES = [
   "Copa Airlines",
 ];
 
-export const AIRLINE_ABBREVIATIONS = {
-  "American Airlines": "AA",
-  "Delta Air Lines": "DL",
-  "United Airlines": "UA",
-  "Lufthansa": "LH",
-  "Air France": "AF",
-  "KLM Royal Dutch Airlines": "KL",
-  "Japan Airlines": "JL",
-  "Aeroméxico": "AM",
-  "British Airways": "BA",
-  "Iberia": "IB",
-  "Copa Airlines": "CM",
-};
-
 export const AVIONES = [
   {
-    code: "E109", pasajeros: 112
+    code: "Boeing 737", pasajeros: 250
   },
   {
-    code: "A330", pasajeros: 288
+    code: "Airbus A320", pasajeros: 180
   },
   {
-    code: "B737", pasajeros: 180
+    code: "Boeing 787 Dreamliner", pasajeros: 330
   }
 ]
 
