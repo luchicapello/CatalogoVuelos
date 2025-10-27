@@ -7,9 +7,12 @@ import { ArrowLeftRight, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 import { AIRLINES } from "../constants/airports";
+import { useSelector } from "react-redux";
 
 export default function Home() {
   const navigate = useNavigate();
+  const { isAuthenticated, loading: loadingUser, user } = useSelector(state => state.auth)
+
   const [query, setQuery] = useState({
     from: "",
     to: "",
@@ -47,7 +50,7 @@ export default function Home() {
     return variantMap[status] || 'default';
   };
 
-  
+
 
 
 
@@ -337,12 +340,18 @@ export default function Home() {
                       <div className="text-lg sm:text-xl font-semibold text-white">
                         {f.moneda} {f.precio.toLocaleString()}
                       </div>
-                      <button
-                        className="mt-1 text-xs sm:text-sm px-2 sm:px-3 py-1.5 rounded-xl bg-gray-700 text-gray-200 hover:bg-gray-600 hover:text-white transition cursor-pointer border border-gray-600"
-                        onClick={() => navigate(`/vuelos/${f.id}`, { state: { flight: f } })}
-                      >
-                        Ver detalle
-                      </button>
+                      {
+                        (!loadingUser && isAuthenticated && user.rol != 'usuario') &&
+                        <button
+                          className="mt-1 text-xs sm:text-sm px-2 sm:px-3 py-1.5 rounded-xl bg-gray-700 text-gray-200 hover:bg-gray-600 hover:text-white transition cursor-pointer border border-gray-600"
+                          onClick={() => navigate(`/vuelos/${f.id}`, { state: { flight: f } })}
+                        >
+                          Ver detalle
+                        </button>
+                      }
+
+
+
                     </div>
                   </div>
                 </li>

@@ -193,7 +193,7 @@ export const AltaVuelo = () => {
       <main className="max-w-md md:max-w-xl mx-auto px-4 py-10">
         <div className="flex items-center gap-4 mb-6">
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/home")}
             className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-600 bg-gray-700 text-gray-200 hover:bg-gray-600 hover:text-white transition font-medium"
           >
             <ArrowLeft className="size-4" />

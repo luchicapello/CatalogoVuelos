@@ -4,6 +4,7 @@ import Pill from "../components/Pill";
 import { useState } from "react";
 import { api } from "../services/api";
 import { Loader2 } from "lucide-react";
+import { useSelector } from "react-redux";
 
 export default function DetalleVuelo() {
   const navigate = useNavigate();
@@ -12,7 +13,7 @@ export default function DetalleVuelo() {
   const [showBtnSave, setShowBtnSave] = useState(false)
   const [flightStatus, setFlightStatus] = useState(flight.estadoVuelo);
   const [isLoading, setIsLoading] = useState(false);
-  console.log(flight);
+  const { isAuthenticated, loading, user } = useSelector(state => state.auth)
 
 
   // Helper function to calculate duration
@@ -93,7 +94,7 @@ export default function DetalleVuelo() {
       // Llamada a la API para actualizar el estado
       const response = await api.changeFlightStatus(flightId, newStatus);
       console.log(response);
-      
+
       // Actualizar el estado del vuelo original y ocultar el botón
       flight.estadoVuelo = newStatus;
       setShowBtnSave(false);
@@ -155,47 +156,54 @@ export default function DetalleVuelo() {
           <div className="flex flex-wrap items-center gap-2">
             <Pill>{calculateDuration(flight.despegue, flight.aterrizajeLocal)}</Pill>
             <Pill>{flight.tipoAvion}</Pill>
-            {/*
-            <Pill variant={getStatusVariant(flight.estadoVuelo)}>
-              {formatFlightStatus(flight.estadoVuelo)}
-            </Pill>
-            */
+            {
+              (!loading && isAuthenticated && user.rol == 'admin')
+
+                ?
+                flight.estadoVuelo !== 'CANCELADO' ? (
+                  <select
+                    value={flightStatus}
+                    onChange={(e) => changeFlightStatus(e.target.value)}
+                    className="inline-flex items-center justify-center rounded-full border px-2 sm:px-2.5 py-1 text-xs font-medium whitespace-nowrap min-w-[80px] cursor-pointer outline-none focus:ring-2 focus:ring-blue-500"
+                    style={{
+                      backgroundColor: flight.estadoVuelo === 'EN_HORA' ? '#065f46' :
+                        flight.estadoVuelo === 'DEMORADO' ? '#92400e' : '#374151',
+                      borderColor: flight.estadoVuelo === 'EN_HORA' ? '#10b981' :
+                        flight.estadoVuelo === 'DEMORADO' ? '#f59e0b' : '#6b7280',
+                      color: flight.estadoVuelo === 'EN_HORA' ? '#6ee7b7' :
+                        flight.estadoVuelo === 'DEMORADO' ? '#fbbf24' : '#d1d5db'
+                    }}
+                  >
+                    <option value="EN_HORA">En Hora</option>
+                    <option value="DEMORADO">Demorado</option>
+                    <option value="CANCELADO" style={{ color: '#ef4444', fontWeight: 'bold' }}>Cancelado</option>
+                  </select>
+                ) : (
+                  <Pill variant={getStatusVariant(flight.estadoVuelo)}>
+                    {formatFlightStatus(flight.estadoVuelo)}
+                  </Pill>
+                )
+
+
+                :
+                <Pill variant={getStatusVariant(flight.estadoVuelo)}>
+                  {formatFlightStatus(flight.estadoVuelo)}
+                </Pill>
+
             }
-            {flight.estadoVuelo !== 'CANCELADO' ? (
-              <select
-                value={flightStatus}
-                onChange={(e) => changeFlightStatus(e.target.value)}
-                className="inline-flex items-center justify-center rounded-full border px-2 sm:px-2.5 py-1 text-xs font-medium whitespace-nowrap min-w-[80px] cursor-pointer outline-none focus:ring-2 focus:ring-blue-500"
-                style={{
-                  backgroundColor: flight.estadoVuelo === 'EN_HORA' ? '#065f46' :
-                    flight.estadoVuelo === 'DEMORADO' ? '#92400e' : '#374151',
-                  borderColor: flight.estadoVuelo === 'EN_HORA' ? '#10b981' :
-                    flight.estadoVuelo === 'DEMORADO' ? '#f59e0b' : '#6b7280',
-                  color: flight.estadoVuelo === 'EN_HORA' ? '#6ee7b7' :
-                    flight.estadoVuelo === 'DEMORADO' ? '#fbbf24' : '#d1d5db'
-                }}
-              >
-                <option value="EN_HORA">En Hora</option>
-                <option value="DEMORADO">Demorado</option>
-                <option value="CANCELADO" style={{ color: '#ef4444', fontWeight: 'bold' }}>Cancelado</option>
-              </select>
-            ) : (
-              <Pill variant={getStatusVariant(flight.estadoVuelo)}>
-                {formatFlightStatus(flight.estadoVuelo)}
-              </Pill>
-            )}
+
 
             {
+
               showBtnSave &&
               <Pill>
-                <button 
-                  onClick={() => confirmSaveStatus()} 
+                <button
+                  onClick={() => confirmSaveStatus()}
                   disabled={isLoading}
-                  className={`flex items-center gap-2 px-2 py-1 rounded-full text-xs font-medium transition ${
-                    isLoading 
-                      ? 'opacity-50 cursor-not-allowed' 
-                      : 'hover:opacity-70 hover:cursor-pointer'
-                  }`}
+                  className={`flex items-center gap-2 px-2 py-1 rounded-full text-xs font-medium transition ${isLoading
+                    ? 'opacity-50 cursor-not-allowed'
+                    : 'hover:opacity-70 hover:cursor-pointer'
+                    }`}
                 >
                   {isLoading ? (
                     <>
