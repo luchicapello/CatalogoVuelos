@@ -5,15 +5,33 @@ import { useState } from "react";
 import { api } from "../services/api";
 import { Loader2 } from "lucide-react";
 import { useSelector } from "react-redux";
+import { ModalFormDemorado } from "../components/ModalFormDemorado";
 
 export default function DetalleVuelo() {
   const navigate = useNavigate();
   const location = useLocation();
   const flight = location.state?.flight;
+  //console.log(flight);
+
   const [showBtnSave, setShowBtnSave] = useState(false)
   const [flightStatus, setFlightStatus] = useState(flight.estadoVuelo);
   const [isLoading, setIsLoading] = useState(false);
   const { isAuthenticated, loading, user } = useSelector(state => state.auth)
+  const [openModal, setOpenModal] = useState(false);
+  const [horasDemorado, setHorasDemorado] = useState(null)
+
+  const changeHorasDemorado = (horas) => {
+    console.log('horas: ', horas);
+
+    setHorasDemorado(horas)
+  }
+
+
+  const toggleModal = () => {
+    setOpenModal((prevState) => {
+      return !prevState;
+    })
+  }
 
 
   // Helper function to calculate duration
@@ -72,6 +90,10 @@ export default function DetalleVuelo() {
   const changeFlightStatus = (newStatus) => {
     setShowBtnSave(true);
     setFlightStatus(newStatus);
+    if (newStatus == 'DEMORADO') {
+      toggleModal();
+    }
+
   }
 
   // Confirmar cambio de estado
@@ -91,9 +113,61 @@ export default function DetalleVuelo() {
 
       console.log(`Cambiando vuelo ${flightId} a estado: ${newStatus}`);
 
+
+
+      // verificar si el estado cambio a DEMORADO, entonces, cambiar el horario..
+      if (newStatus === 'DEMORADO') {
+        // 1. Crear un objeto Date a partir del string ISO. 
+        // Es importante notar que tu string de fecha '2025-10-24T13:55:07Z' termina en 'Z', 
+        // lo que significa que está en formato UTC (Zulu time). El objeto Date lo interpretará como tal.
+        const fechaAterrizajeOriginal = new Date(flight.aterrizajeLocal);
+
+        // 2. Separar las horas y minutos del string 'HH:MM'
+        const [horasStr, minutosStr] = horasDemorado.split(':');
+
+        const horasASumar = parseInt(horasStr, 10);
+        const minutosASumar = parseInt(minutosStr, 10);
+
+        // 3. Sumar las horas y minutos usando los métodos UTC del objeto Date
+        // Usamos getUTCHours() y setUTCHours() para mantener la operación en UTC,
+        // que es la zona horaria de tu string '...Z'. Esto evita problemas de zona horaria local.
+
+        // Sumar las horas:
+        fechaAterrizajeOriginal.setUTCHours(fechaAterrizajeOriginal.getUTCHours() + horasASumar);
+
+        // Sumar los minutos:
+        fechaAterrizajeOriginal.setUTCMinutes(fechaAterrizajeOriginal.getUTCMinutes() + minutosASumar);
+
+        // 4. Obtener el resultado en el formato ISO deseado (YYYY-MM-DDTHH:mm:ss.sssZ)
+        const fechaAterrizajeFinalISO = fechaAterrizajeOriginal.toISOString();
+
+        console.log('Aterrizaje demorado', fechaAterrizajeFinalISO);
+        // -------------- CALCULO PARA DESPEGUE ---------------
+
+        const fechaDespegueOriginal = new Date(flight.despegue);
+
+        // Sumar las horas:
+        fechaDespegueOriginal.setUTCHours(fechaDespegueOriginal.getUTCHours() + horasASumar);
+
+        // Sumar los minutos:
+        fechaDespegueOriginal.setUTCMinutes(fechaDespegueOriginal.getUTCMinutes() + minutosASumar);
+
+        // 4. Obtener el resultado en el formato ISO deseado (YYYY-MM-DDTHH:mm:ss.sssZ)
+        const fechaDespegueFinalISO = fechaDespegueOriginal.toISOString();
+
+        console.log('Despegue demorado: ', fechaDespegueFinalISO);
+
+        const response = await api.changeFlightDate(flightId, fechaAterrizajeFinalISO, fechaDespegueFinalISO);
+        //console.log('response date', response);
+        flight.aterrizajeLocal = fechaAterrizajeFinalISO;
+        flight.despegue = fechaDespegueFinalISO;
+
+
+      }
+
       // Llamada a la API para actualizar el estado
-      const response = await api.changeFlightStatus(flightId, newStatus);
-      console.log(response);
+      const responseStatus = await api.changeFlightStatus(flightId, newStatus);
+      //console.log('response final ' , responseStatus);
 
       // Actualizar el estado del vuelo original y ocultar el botón
       flight.estadoVuelo = newStatus;
@@ -208,10 +282,10 @@ export default function DetalleVuelo() {
                   {isLoading ? (
                     <>
                       <Loader2 className="size-3 animate-spin" />
-                      Guardando...
+                      Confirmando...
                     </>
                   ) : (
-                    'Guardar'
+                    'Confirmar'
                   )}
                 </button>
               </Pill>
@@ -256,6 +330,8 @@ export default function DetalleVuelo() {
             </button>
           </div>
         </section>
+
+        <ModalFormDemorado isOpen={openModal} toggleModal={toggleModal} changeHorasDemorado={changeHorasDemorado} />
       </main>
     </>
   );

@@ -1,3 +1,8 @@
+## Usuario ADMIN
+
+catalogo@gmail.com
+uade1234
+
 ## ENDPOINT BASE
     https://grupo5-usuarios.vercel.app/
 
@@ -49,3 +54,8 @@ Estructura de cuerpo de la petición:
 URL: /api/usuarios
 Método: POST
  Y esto para registra
+
+
+ ### Modificar horarios
+
+    - Cuando se demora el vuelo se le suma esa demora a la fecha y hora original (aterrizajeLocal, despegue)
