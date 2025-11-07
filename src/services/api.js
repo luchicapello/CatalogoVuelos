@@ -32,6 +32,8 @@ export const api = {
 
   // Change flight status
   async changeFlightStatus(id, status) {
+    console.log('Status', status);
+    
     try {
       const response = await apiClient.put(`/vuelos/${id}`, {
         estadoVuelo: status
@@ -42,7 +44,19 @@ export const api = {
       throw error;
     }
   },
-
+  // Change flight status
+  async changeFlightDate(id, nuevaAterrizaje, nuevoDespegue) {
+    try {
+      const response = await apiClient.put(`/vuelos/${id}`, {
+        aterrizajeLocal: nuevaAterrizaje,
+        despegue: nuevoDespegue
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error changing flight status:', error);
+      throw error;
+    }
+  },
   // Cear nuevo vuelo
   async createFlight(data) {
     try {

@@ -1,11 +1,38 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Pill from "../components/Pill";
+import { useState } from "react";
+import { api } from "../services/api";
+import { Loader2 } from "lucide-react";
+import { useSelector } from "react-redux";
+import { ModalFormDemorado } from "../components/ModalFormDemorado";
 
 export default function DetalleVuelo() {
   const navigate = useNavigate();
   const location = useLocation();
   const flight = location.state?.flight;
+  //console.log(flight);
+
+  const [showBtnSave, setShowBtnSave] = useState(false)
+  const [flightStatus, setFlightStatus] = useState(flight.estadoVuelo);
+  const [isLoading, setIsLoading] = useState(false);
+  const { isAuthenticated, loading, user } = useSelector(state => state.auth)
+  const [openModal, setOpenModal] = useState(false);
+  const [horasDemorado, setHorasDemorado] = useState(null)
+
+  const changeHorasDemorado = (horas) => {
+    console.log('horas: ', horas);
+
+    setHorasDemorado(horas)
+  }
+
+
+  const toggleModal = () => {
+    setOpenModal((prevState) => {
+      return !prevState;
+    })
+  }
+
 
   // Helper function to calculate duration
   const calculateDuration = (departure, arrival) => {
@@ -20,8 +47,8 @@ export default function DetalleVuelo() {
   // Helper function to format time
   const formatTime = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleTimeString('es-ES', { 
-      hour: '2-digit', 
+    return date.toLocaleTimeString('es-ES', {
+      hour: '2-digit',
       minute: '2-digit',
       timeZone: 'UTC'
     });
@@ -59,6 +86,101 @@ export default function DetalleVuelo() {
     return variantMap[status] || 'default';
   };
 
+  // Verificar si cambio el estado del vuelo
+  const changeFlightStatus = (newStatus) => {
+    setShowBtnSave(true);
+    setFlightStatus(newStatus);
+    if (newStatus == 'DEMORADO') {
+      toggleModal();
+    }
+
+  }
+
+  // Confirmar cambio de estado
+  const confirmSaveStatus = async () => {
+    setIsLoading(true);
+    const newStatus = flightStatus;
+    const flightId = flight.id
+    try {
+      // Confirmación especial para cancelar vuelos
+      if (newStatus === 'CANCELADO') {
+        const confirmed = window.confirm('¿Estás seguro de que quieres cancelar este vuelo? Esta acción no se puede deshacer.');
+        if (!confirmed) {
+          setIsLoading(false);
+          return; // No hacer nada si el usuario cancela
+        }
+      }
+
+      console.log(`Cambiando vuelo ${flightId} a estado: ${newStatus}`);
+
+
+
+      // verificar si el estado cambio a DEMORADO, entonces, cambiar el horario..
+      if (newStatus === 'DEMORADO') {
+        // 1. Crear un objeto Date a partir del string ISO. 
+        // Es importante notar que tu string de fecha '2025-10-24T13:55:07Z' termina en 'Z', 
+        // lo que significa que está en formato UTC (Zulu time). El objeto Date lo interpretará como tal.
+        const fechaAterrizajeOriginal = new Date(flight.aterrizajeLocal);
+
+        // 2. Separar las horas y minutos del string 'HH:MM'
+        const [horasStr, minutosStr] = horasDemorado.split(':');
+
+        const horasASumar = parseInt(horasStr, 10);
+        const minutosASumar = parseInt(minutosStr, 10);
+
+        // 3. Sumar las horas y minutos usando los métodos UTC del objeto Date
+        // Usamos getUTCHours() y setUTCHours() para mantener la operación en UTC,
+        // que es la zona horaria de tu string '...Z'. Esto evita problemas de zona horaria local.
+
+        // Sumar las horas:
+        fechaAterrizajeOriginal.setUTCHours(fechaAterrizajeOriginal.getUTCHours() + horasASumar);
+
+        // Sumar los minutos:
+        fechaAterrizajeOriginal.setUTCMinutes(fechaAterrizajeOriginal.getUTCMinutes() + minutosASumar);
+
+        // 4. Obtener el resultado en el formato ISO deseado (YYYY-MM-DDTHH:mm:ss.sssZ)
+        const fechaAterrizajeFinalISO = fechaAterrizajeOriginal.toISOString();
+
+        console.log('Aterrizaje demorado', fechaAterrizajeFinalISO);
+        // -------------- CALCULO PARA DESPEGUE ---------------
+
+        const fechaDespegueOriginal = new Date(flight.despegue);
+
+        // Sumar las horas:
+        fechaDespegueOriginal.setUTCHours(fechaDespegueOriginal.getUTCHours() + horasASumar);
+
+        // Sumar los minutos:
+        fechaDespegueOriginal.setUTCMinutes(fechaDespegueOriginal.getUTCMinutes() + minutosASumar);
+
+        // 4. Obtener el resultado en el formato ISO deseado (YYYY-MM-DDTHH:mm:ss.sssZ)
+        const fechaDespegueFinalISO = fechaDespegueOriginal.toISOString();
+
+        console.log('Despegue demorado: ', fechaDespegueFinalISO);
+
+        const response = await api.changeFlightDate(flightId, fechaAterrizajeFinalISO, fechaDespegueFinalISO);
+        //console.log('response date', response);
+        flight.aterrizajeLocal = fechaAterrizajeFinalISO;
+        flight.despegue = fechaDespegueFinalISO;
+
+
+      }
+
+      // Llamada a la API para actualizar el estado
+      const responseStatus = await api.changeFlightStatus(flightId, newStatus);
+      //console.log('response final ' , responseStatus);
+
+      // Actualizar el estado del vuelo original y ocultar el botón
+      flight.estadoVuelo = newStatus;
+      setShowBtnSave(false);
+      setIsLoading(false);
+      console.log(`Estado del vuelo ${flightId} actualizado a: ${newStatus}`);
+    } catch (error) {
+      console.error('Error al cambiar estado del vuelo:', error);
+      // Aquí podrías mostrar un toast o mensaje de error al usuario
+      alert('Error al cambiar el estado del vuelo. Por favor, intenta de nuevo.');
+      setIsLoading(false);
+    }
+  }
   if (!flight) {
     return (
       <>
@@ -68,7 +190,7 @@ export default function DetalleVuelo() {
             <h1 className="text-2xl font-semibold mb-2 text-gray-100">Vuelo no encontrado</h1>
             <p className="text-gray-400 mb-6">No se pudo obtener la información del vuelo.</p>
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => navigate('/home')}
               className="px-4 h-11 rounded-xl border border-gray-600 bg-gray-700 text-gray-100 hover:bg-gray-600 cursor-pointer transition"
             >
               Volver
@@ -108,9 +230,67 @@ export default function DetalleVuelo() {
           <div className="flex flex-wrap items-center gap-2">
             <Pill>{calculateDuration(flight.despegue, flight.aterrizajeLocal)}</Pill>
             <Pill>{flight.tipoAvion}</Pill>
-            <Pill variant={getStatusVariant(flight.estadoVuelo)}>
-              {formatFlightStatus(flight.estadoVuelo)}
-            </Pill>
+            {
+              (!loading && isAuthenticated && user.rol == 'admin')
+
+                ?
+                flight.estadoVuelo !== 'CANCELADO' ? (
+                  <select
+                    value={flightStatus}
+                    onChange={(e) => changeFlightStatus(e.target.value)}
+                    className="inline-flex items-center justify-center rounded-full border px-2 sm:px-2.5 py-1 text-xs font-medium whitespace-nowrap min-w-[80px] cursor-pointer outline-none focus:ring-2 focus:ring-blue-500"
+                    style={{
+                      backgroundColor: flight.estadoVuelo === 'EN_HORA' ? '#065f46' :
+                        flight.estadoVuelo === 'DEMORADO' ? '#92400e' : '#374151',
+                      borderColor: flight.estadoVuelo === 'EN_HORA' ? '#10b981' :
+                        flight.estadoVuelo === 'DEMORADO' ? '#f59e0b' : '#6b7280',
+                      color: flight.estadoVuelo === 'EN_HORA' ? '#6ee7b7' :
+                        flight.estadoVuelo === 'DEMORADO' ? '#fbbf24' : '#d1d5db'
+                    }}
+                  >
+                    <option value="EN_HORA">En Hora</option>
+                    <option value="DEMORADO">Demorado</option>
+                    <option value="CANCELADO" style={{ color: '#ef4444', fontWeight: 'bold' }}>Cancelado</option>
+                  </select>
+                ) : (
+                  <Pill variant={getStatusVariant(flight.estadoVuelo)}>
+                    {formatFlightStatus(flight.estadoVuelo)}
+                  </Pill>
+                )
+
+
+                :
+                <Pill variant={getStatusVariant(flight.estadoVuelo)}>
+                  {formatFlightStatus(flight.estadoVuelo)}
+                </Pill>
+
+            }
+
+
+            {
+
+              showBtnSave &&
+              <Pill>
+                <button
+                  onClick={() => confirmSaveStatus()}
+                  disabled={isLoading}
+                  className={`flex items-center gap-2 px-2 py-1 rounded-full text-xs font-medium transition ${isLoading
+                    ? 'opacity-50 cursor-not-allowed'
+                    : 'hover:opacity-70 hover:cursor-pointer'
+                    }`}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="size-3 animate-spin" />
+                      Confirmando...
+                    </>
+                  ) : (
+                    'Confirmar'
+                  )}
+                </button>
+              </Pill>
+            }
+
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
@@ -143,13 +323,15 @@ export default function DetalleVuelo() {
 
           <div className="flex items-center justify-between gap-3">
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => navigate('/home')}
               className="px-4 h-11 rounded-xl border border-gray-600 bg-gray-700 text-gray-100 hover:bg-gray-600 cursor-pointer transition"
             >
               Volver
             </button>
           </div>
         </section>
+
+        <ModalFormDemorado isOpen={openModal} toggleModal={toggleModal} changeHorasDemorado={changeHorasDemorado} />
       </main>
     </>
   );

@@ -7,9 +7,12 @@ import { ArrowLeftRight, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 import { AIRLINES } from "../constants/airports";
+import { useSelector } from "react-redux";
 
 export default function Home() {
   const navigate = useNavigate();
+  const { isAuthenticated, loading: loadingUser, user } = useSelector(state => state.auth)
+
   const [query, setQuery] = useState({
     from: "",
     to: "",
@@ -48,38 +51,8 @@ export default function Home() {
   };
 
 
-  // Function to change flight status
-  const changeFlightStatus = async (flightId, newStatus) => {
-    try {
-      // Confirmación especial para cancelar vuelos
-      if (newStatus === 'CANCELADO') {
-        const confirmed = window.confirm('¿Estás seguro de que quieres cancelar este vuelo? Esta acción no se puede deshacer.');
-        if (!confirmed) {
-          return; // No hacer nada si el usuario cancela
-        }
-      }
-      
-      console.log(`Cambiando vuelo ${flightId} a estado: ${newStatus}`);
-      
-      // Llamada a la API para actualizar el estado
-      await api.changeFlightStatus(flightId, newStatus);
-      
-      // Actualizar el estado local después de la llamada exitosa
-      setFlights(prevFlights => 
-        prevFlights.map(flight => 
-          flight.id === flightId 
-            ? { ...flight, estadoVuelo: newStatus }
-            : flight
-        )
-      );
-      
-      console.log(`Estado del vuelo ${flightId} actualizado a: ${newStatus}`);
-    } catch (error) {
-      console.error('Error al cambiar estado del vuelo:', error);
-      // Aquí podrías mostrar un toast o mensaje de error al usuario
-      alert('Error al cambiar el estado del vuelo. Por favor, intenta de nuevo.');
-    }
-  };
+
+
 
 
   // Fetch flights on component mount
@@ -89,7 +62,7 @@ export default function Home() {
         setLoading(true);
         setError(null);
         const data = await api.getFlights();
-        setFlights(data); 
+        setFlights(data);
       } catch (err) {
         setError("Error al cargar los vuelos. Por favor, intenta de nuevo.");
         console.error("Error fetching flights:", err);
@@ -114,7 +87,7 @@ export default function Home() {
       const matchesAirline = query.airline
         ? f.aerolinea === query.airline
         : true;
-      
+
       return (
         matchesFrom &&
         matchesTo &&
@@ -332,6 +305,11 @@ export default function Home() {
                   </div>
                   <div className="flex flex-wrap items-center gap-2 sm:gap-4">
                     <Pill>{formatDuration(toMinutes(f))}</Pill>
+
+                    <Pill variant={getStatusVariant(f.estadoVuelo)}>
+                      {formatFlightStatus(f.estadoVuelo)}
+                    </Pill>
+                    {/*
                     {f.estadoVuelo !== 'CANCELADO' ? (
                       <select
                         value={f.estadoVuelo}
@@ -355,17 +333,25 @@ export default function Home() {
                         {formatFlightStatus(f.estadoVuelo)}
                       </Pill>
                     )}
+                    */
+                    }
                     <Pill className="hidden sm:inline-flex">{f.capacidadAvion} asientos</Pill>
                     <div className="text-right flex flex-col sm:block">
                       <div className="text-lg sm:text-xl font-semibold text-white">
                         {f.moneda} {f.precio.toLocaleString()}
                       </div>
-                      <button
-                        className="mt-1 text-xs sm:text-sm px-2 sm:px-3 py-1.5 rounded-xl bg-gray-700 text-gray-200 hover:bg-gray-600 hover:text-white transition cursor-pointer border border-gray-600"
-                        onClick={() => navigate(`/vuelos/${f.id}`, { state: { flight: f } })}
-                      >
-                        Ver detalle
-                      </button>
+                      {
+                        (!loadingUser && isAuthenticated && user.rol != 'usuario') &&
+                        <button
+                          className="mt-1 text-xs sm:text-sm px-2 sm:px-3 py-1.5 rounded-xl bg-gray-700 text-gray-200 hover:bg-gray-600 hover:text-white transition cursor-pointer border border-gray-600"
+                          onClick={() => navigate(`/vuelos/${f.id}`, { state: { flight: f } })}
+                        >
+                          Ver detalle
+                        </button>
+                      }
+
+
+
                     </div>
                   </div>
                 </li>
