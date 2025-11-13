@@ -84,8 +84,6 @@ export default function Login() {
         {error && <p className="text-sm text-center text-red-400">{error}</p>}
         {msg && <p className="text-sm text-center text-gray-300">{msg}</p>}
 
-        <p className="text-gray-300">No estás registrado? <Link to="/signup" className="text-blue-400 hover:text-blue-300">Registrate</Link></p>
-
       </form>
       </main>
     </div>

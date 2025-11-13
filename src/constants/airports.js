@@ -47,7 +47,7 @@ export const AIRLINE_ABBREVIATIONS = {
 
 export const AVIONES = [
   {
-    code: "E109", pasajeros: 112
+    code: "E190", pasajeros: 112
   },
   {
     code: "A330", pasajeros: 288
