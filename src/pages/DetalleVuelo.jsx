@@ -157,7 +157,7 @@ export default function DetalleVuelo() {
 
         console.log('Despegue demorado: ', fechaDespegueFinalISO);
 
-        const response = await api.changeFlightDate(flightId, fechaAterrizajeFinalISO, fechaDespegueFinalISO);
+        await api.changeFlightDate(flightId, fechaAterrizajeFinalISO, fechaDespegueFinalISO);
         //console.log('response date', response);
         flight.aterrizajeLocal = fechaAterrizajeFinalISO;
         flight.despegue = fechaDespegueFinalISO;
@@ -166,7 +166,7 @@ export default function DetalleVuelo() {
       }
 
       // Llamada a la API para actualizar el estado
-      const responseStatus = await api.changeFlightStatus(flightId, newStatus);
+      await api.changeFlightStatus(flightId, newStatus);
       //console.log('response final ' , responseStatus);
 
       // Actualizar el estado del vuelo original y ocultar el botón
