@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://backendcatalogo-production.up.railway.app';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const API_KEY = 'dapps2-2025';
 
 // Create axios instance with default config
