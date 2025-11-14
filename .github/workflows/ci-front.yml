@@ -47,7 +47,7 @@ jobs:
 
       - name: Test (Vitest) with coverage
         run: pnpm run test:coverage
-        continue-on-error: true
+
 
       - name: Upload coverage artifact
         if: always()
