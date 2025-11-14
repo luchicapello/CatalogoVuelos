@@ -2,7 +2,7 @@ import axios from "axios";
 
 const instance = axios.create({
     // la URL BASE DEL BACKEND
-    baseURL: 'https://backendcatalogo-production.up.railway.app',
+    baseURL: 'https://grupo5-usuarios.vercel.app/api',
     headers: {
         'Content-Type': 'application/json',
     },
