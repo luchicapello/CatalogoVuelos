@@ -169,6 +169,8 @@ export default function DetalleVuelo() {
     );
   }
 
+  const isFlightInPast = new Date() > new Date(flight.aterrizajeLocal);
+
   return (
     <>
       <Navbar />
@@ -204,9 +206,12 @@ export default function DetalleVuelo() {
                 ?
                 flight.estadoVuelo !== 'CANCELADO' ? (
                   <select
+                    disabled={isFlightInPast}
                     value={flightStatus}
                     onChange={(e) => changeFlightStatus(e.target.value)}
-                    className="inline-flex items-center justify-center rounded-full border px-2 sm:px-2.5 py-1 text-xs font-medium whitespace-nowrap min-w-[80px] cursor-pointer outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`inline-flex items-center justify-center rounded-full border px-2 sm:px-2.5 py-1 text-xs font-medium whitespace-nowrap min-w-[80px] outline-none focus:ring-2 focus:ring-blue-500 ${
+                      isFlightInPast ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                    }`}
                     style={{
                       backgroundColor: flight.estadoVuelo === 'EN_HORA' ? '#065f46' :
                         flight.estadoVuelo === 'DEMORADO' ? '#92400e' : '#374151',
