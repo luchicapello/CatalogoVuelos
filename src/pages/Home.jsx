@@ -296,7 +296,7 @@ export default function Home() {
                         {f.aerolinea}
                       </div>
                       <div className="text-sm text-gray-400">
-                        {f.origen} → {f.destino} · {new Date(f.despegue).toLocaleDateString('es-ES')}
+                        {f.origen} → {f.destino} · {new Date(f.despegue).toLocaleDateString('es-ES', { timeZone: 'UTC' })}
                       </div>
                       <div className="text-xs text-gray-500">
                         {f.idVuelo} · {f.tipoAvion}

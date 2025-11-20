@@ -33,13 +33,12 @@ export const AltaVuelo = () => {
   );
 
   // fecha/hora mínima
-  const nowLocalISO = useMemo(() => {
+  const nowUTCISO = useMemo(() => {
     const now = new Date();
-    const tzFix = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
-    return tzFix.toISOString().slice(0, 19); // YYYY-MM-DDTHH:mm:ss
+    return now.toISOString().slice(0, 19); // YYYY-MM-DDTHH:mm:ss
   }, []);
 
-  const toIsoNoMs = (d) => new Date(d).toISOString().replace(/\.\d{3}Z$/, "Z");
+  const toIsoNoMs = (d) => d.toISOString().replace(/\.\d{3}Z$/, "Z");
 
   const [form, setForm] = useState({
     aerolinea: "",
@@ -129,8 +128,9 @@ export const AltaVuelo = () => {
     }
 
     // fechas/reglas
-    const despegueDate = new Date(form.despegue);
-    const aterrizajeDate = new Date(form.aterrizajeLocal);
+    // Interpret inputs as UTC by appending 'Z'
+    const despegueDate = new Date(form.despegue + "Z");
+    const aterrizajeDate = new Date(form.aterrizajeLocal + "Z");
     const ahora = new Date();
     if (despegueDate < ahora) {
       setIsLoading(false);
@@ -320,7 +320,7 @@ export const AltaVuelo = () => {
             <input
               type="datetime-local"
               step={1}
-              min={nowLocalISO}
+              min={nowUTCISO}
               value={form.despegue}
               onChange={(e) =>
                 setForm((f) => ({ ...f, despegue: e.target.value }))
@@ -329,11 +329,11 @@ export const AltaVuelo = () => {
             />
           </Field>
 
-          <Field label="Hora de aterrizaje (Local)">
+          <Field label="Hora de aterrizaje (UTC)">
             <input
               type="datetime-local"
               step={1}
-              min={form.despegue || nowLocalISO}
+              min={form.despegue || nowUTCISO}
               value={form.aterrizajeLocal}
               onChange={(e) =>
                 setForm((f) => ({ ...f, aterrizajeLocal: e.target.value }))

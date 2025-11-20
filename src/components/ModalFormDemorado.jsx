@@ -1,54 +1,152 @@
-import { useState } from "react"
+import { useState } from "react";
+import { X, Clock, AlertTriangle, Loader2, Save } from "lucide-react";
+import { api } from "../services/api";
 
+export const ModalFormDemorado = ({ isOpen, toggleModal, flight, onSuccess }) => {
+  const [horas, setHoras] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-export const ModalFormDemorado = ({ isOpen, toggleModal, changeHorasDemorado }) => {
-    const [horas, setHoras] = useState(null)
-
-    function submitForm(e) {
-        e.preventDefault();
-        console.log('horas modal:', horas);
-        changeHorasDemorado(horas)
-        toggleModal()
+  async function submitForm(e) {
+    e.preventDefault();
+    setError(null);
+    
+    if (!horas) {
+        setError("Por favor, ingresá el tiempo de demora.");
+        return;
     }
-    return (
 
-        <>
+    setIsLoading(true);
 
-            <div id="authentication-modal" tabindex="-1" aria-hidden="true" className={`${isOpen ? 'flex' : 'hidden'} overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full`}
-            >
-                <div className="relative p-4 w-full max-w-md max-h-full">
+    try {
+      // 1. Calculate new times
+      const [horasStr, minutosStr] = horas.split(":");
+      const horasASumar = parseInt(horasStr, 10);
+      const minutosASumar = parseInt(minutosStr, 10);
 
-                    <div className="relative bg-white rounded-lg shadow-sm dark:bg-gray-700">
+      const fechaAterrizajeOriginal = new Date(flight.aterrizajeLocal);
+      fechaAterrizajeOriginal.setUTCHours(
+        fechaAterrizajeOriginal.getUTCHours() + horasASumar
+      );
+      fechaAterrizajeOriginal.setUTCMinutes(
+        fechaAterrizajeOriginal.getUTCMinutes() + minutosASumar
+      );
+      const fechaAterrizajeFinalISO = fechaAterrizajeOriginal.toISOString();
 
-                        <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600 border-gray-200">
-                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                                Asignar nuevo horario
-                            </h3>
-                            <button onClick={toggleModal} type="button" className="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="authentication-modal">
-                                <svg className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-                                </svg>
-                                <span className="sr-only">Close modal</span>
-                            </button>
-                        </div>
+      const fechaDespegueOriginal = new Date(flight.despegue);
+      fechaDespegueOriginal.setUTCHours(
+        fechaDespegueOriginal.getUTCHours() + horasASumar
+      );
+      fechaDespegueOriginal.setUTCMinutes(
+        fechaDespegueOriginal.getUTCMinutes() + minutosASumar
+      );
+      const fechaDespegueFinalISO = fechaDespegueOriginal.toISOString();
 
-                        <div className="p-4 md:p-5">
-                            <form onSubmit={submitForm} className="space-y-4">
-                                <div>
-                                    <label for="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tiempo de demora</label>
-                                    <input
-                                        onChange={(e) => setHoras(e.target.value)}
-                                        type="time" name="horas" id="horas" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required />
-                                </div>
+      // 2. Call API to change date
+      await api.changeFlightDate(
+        flight.id,
+        fechaAterrizajeFinalISO,
+        fechaDespegueFinalISO
+      );
 
+      // 3. Call API to change status
+      await api.changeFlightStatus(flight.id, "DEMORADO");
 
-                                <button type="submit" className="w-full cursor-pointer text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Guardar</button>
+      // 4. Success
+      onSuccess({
+        ...flight,
+        estadoVuelo: "DEMORADO",
+        despegue: fechaDespegueFinalISO,
+        aterrizajeLocal: fechaAterrizajeFinalISO,
+      });
+      toggleModal();
+      setHoras("");
+    } catch (err) {
+      console.error(err);
+      setError("Ocurrió un error al guardar la demora. Intentalo de nuevo.");
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div >
-        </>
-    )
-}
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <div className="relative w-full max-w-md bg-gray-800 rounded-2xl shadow-2xl border border-gray-700 overflow-hidden animate-in fade-in zoom-in duration-200">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700 bg-gray-800/50">
+          <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+            <Clock className="size-5 text-yellow-500" />
+            Reportar Demora
+          </h3>
+          <button
+            onClick={toggleModal}
+            className="text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg p-1 transition"
+          >
+            <X className="size-5" />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="p-6">
+          <form onSubmit={submitForm} className="space-y-5">
+            <div>
+              <label
+                htmlFor="horas"
+                className="block mb-2 text-sm font-medium text-gray-300"
+              >
+                Tiempo de demora (HH:MM)
+              </label>
+              <input
+                type="time"
+                id="horas"
+                value={horas}
+                onChange={(e) => setHoras(e.target.value)}
+                className="w-full h-11 rounded-xl border border-gray-600 bg-gray-700 text-white px-3 outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 transition"
+                required
+              />
+              <p className="mt-2 text-xs text-gray-500">
+                Este tiempo se sumará a la hora de despegue y aterrizaje actual.
+              </p>
+            </div>
+
+            {error && (
+              <div className="p-3 rounded-xl bg-red-900/20 border border-red-800 text-red-200 text-sm flex items-start gap-2">
+                <AlertTriangle className="size-4 mt-0.5 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={toggleModal}
+                className="flex-1 h-11 rounded-xl border border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white transition font-medium"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="flex-1 h-11 rounded-xl bg-yellow-600 text-white hover:bg-yellow-500 transition font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    Guardando...
+                  </>
+                ) : (
+                  <>
+                    <Save className="size-4" />
+                    Confirmar Demora
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
