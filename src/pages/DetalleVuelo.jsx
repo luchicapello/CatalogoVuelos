@@ -6,6 +6,7 @@ import { api } from "../services/api";
 import { Loader2 } from "lucide-react";
 import { useSelector } from "react-redux";
 import { ModalFormDemorado } from "../components/ModalFormDemorado";
+import { ModalConfirmarEstado } from "../components/ModalConfirmarEstado";
 
 export default function DetalleVuelo() {
   const navigate = useNavigate();
@@ -18,6 +19,8 @@ export default function DetalleVuelo() {
   const [isLoading, setIsLoading] = useState(false);
   const { isAuthenticated, loading, user } = useSelector(state => state.auth)
   const [openModal, setOpenModal] = useState(false);
+  const [openConfirmModal, setOpenConfirmModal] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState(null);
 
 
   const handleModalSuccess = (updatedFlight) => {
@@ -42,6 +45,10 @@ export default function DetalleVuelo() {
     setOpenModal((prevState) => {
       return !prevState;
     })
+  }
+
+  const toggleConfirmModal = () => {
+    setOpenConfirmModal((prev) => !prev);
   }
 
 
@@ -103,24 +110,18 @@ export default function DetalleVuelo() {
       toggleModal();
       return; // Stop here, modal handles the rest
     }
-    setShowBtnSave(true);
-    setFlightStatus(newStatus);
+    setPendingStatus(newStatus);
+    toggleConfirmModal();
   }
 
   // Confirmar cambio de estado
   const confirmSaveStatus = async () => {
     setIsLoading(true);
-    const newStatus = flightStatus;
+    const newStatus = pendingStatus;
     const flightId = flight.id
     try {
-      // Confirmación especial para cancelar vuelos
-      if (newStatus === 'CANCELADO') {
-        const confirmed = window.confirm('¿Estás seguro de que quieres cancelar este vuelo? Esta acción no se puede deshacer.');
-        if (!confirmed) {
-          setIsLoading(false);
-          return; // No hacer nada si el usuario cancela
-        }
-      }
+      // Confirmación especial para cancelar vuelos (handled by modal text now)
+      // if (newStatus === 'CANCELADO') { ... }
 
       console.log(`Cambiando vuelo ${flightId} a estado: ${newStatus}`);
 
@@ -137,7 +138,8 @@ export default function DetalleVuelo() {
 
       // Actualizar el estado del vuelo original y ocultar el botón
       flight.estadoVuelo = newStatus;
-      setShowBtnSave(false);
+      setFlightStatus(newStatus); // Update local state to reflect change in UI if needed
+      toggleConfirmModal();
       setIsLoading(false);
       console.log(`Estado del vuelo ${flightId} actualizado a: ${newStatus}`);
     } catch (error) {
@@ -233,29 +235,7 @@ export default function DetalleVuelo() {
             }
 
 
-            {
-
-              showBtnSave &&
-              <Pill>
-                <button
-                  onClick={() => confirmSaveStatus()}
-                  disabled={isLoading}
-                  className={`flex items-center gap-2 px-2 py-1 rounded-full text-xs font-medium transition ${isLoading
-                    ? 'opacity-50 cursor-not-allowed'
-                    : 'hover:opacity-70 hover:cursor-pointer'
-                    }`}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="size-3 animate-spin" />
-                      Confirmando...
-                    </>
-                  ) : (
-                    'Confirmar'
-                  )}
-                </button>
-              </Pill>
-            }
+            {/* Removed inline save button */}
 
           </div>
 
@@ -302,6 +282,14 @@ export default function DetalleVuelo() {
           toggleModal={toggleModal} 
           flight={flight}
           onSuccess={handleModalSuccess} 
+        />
+
+        <ModalConfirmarEstado
+          isOpen={openConfirmModal}
+          toggleModal={toggleConfirmModal}
+          newStatus={pendingStatus}
+          onConfirm={confirmSaveStatus}
+          isLoading={isLoading}
         />
       </main>
     </>
