@@ -3,7 +3,8 @@ import { X, Clock, AlertTriangle, Loader2, Save } from "lucide-react";
 import { api } from "../services/api";
 
 export const ModalFormDemorado = ({ isOpen, toggleModal, flight, onSuccess }) => {
-  const [horas, setHoras] = useState("");
+  const [delayHours, setDelayHours] = useState(0);
+  const [delayMinutes, setDelayMinutes] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -11,8 +12,8 @@ export const ModalFormDemorado = ({ isOpen, toggleModal, flight, onSuccess }) =>
     e.preventDefault();
     setError(null);
     
-    if (!horas) {
-        setError("Por favor, ingresá el tiempo de demora.");
+    if (delayHours === 0 && delayMinutes === 0) {
+        setError("Por favor, ingresá un tiempo de demora mayor a 0.");
         return;
     }
 
@@ -20,25 +21,24 @@ export const ModalFormDemorado = ({ isOpen, toggleModal, flight, onSuccess }) =>
 
     try {
       // 1. Calculate new times
-      const [horasStr, minutosStr] = horas.split(":");
-      const horasASumar = parseInt(horasStr, 10);
-      const minutosASumar = parseInt(minutosStr, 10);
+      const hoursToAdd = Number(delayHours);
+      const minutesToAdd = Number(delayMinutes);
 
       const fechaAterrizajeOriginal = new Date(flight.aterrizajeLocal);
       fechaAterrizajeOriginal.setUTCHours(
-        fechaAterrizajeOriginal.getUTCHours() + horasASumar
+        fechaAterrizajeOriginal.getUTCHours() + hoursToAdd
       );
       fechaAterrizajeOriginal.setUTCMinutes(
-        fechaAterrizajeOriginal.getUTCMinutes() + minutosASumar
+        fechaAterrizajeOriginal.getUTCMinutes() + minutesToAdd
       );
       const fechaAterrizajeFinalISO = fechaAterrizajeOriginal.toISOString();
 
       const fechaDespegueOriginal = new Date(flight.despegue);
       fechaDespegueOriginal.setUTCHours(
-        fechaDespegueOriginal.getUTCHours() + horasASumar
+        fechaDespegueOriginal.getUTCHours() + hoursToAdd
       );
       fechaDespegueOriginal.setUTCMinutes(
-        fechaDespegueOriginal.getUTCMinutes() + minutosASumar
+        fechaDespegueOriginal.getUTCMinutes() + minutesToAdd
       );
       const fechaDespegueFinalISO = fechaDespegueOriginal.toISOString();
 
@@ -60,7 +60,8 @@ export const ModalFormDemorado = ({ isOpen, toggleModal, flight, onSuccess }) =>
         aterrizajeLocal: fechaAterrizajeFinalISO,
       });
       toggleModal();
-      setHoras("");
+      setDelayHours(0);
+      setDelayMinutes(0);
     } catch (err) {
       console.error(err);
       setError("Ocurrió un error al guardar la demora. Intentalo de nuevo.");
@@ -91,25 +92,46 @@ export const ModalFormDemorado = ({ isOpen, toggleModal, flight, onSuccess }) =>
         {/* Body */}
         <div className="p-6">
           <form onSubmit={submitForm} className="space-y-5">
-            <div>
-              <label
-                htmlFor="horas"
-                className="block mb-2 text-sm font-medium text-gray-300"
-              >
-                Tiempo de demora (HH:MM)
-              </label>
-              <input
-                type="time"
-                id="horas"
-                value={horas}
-                onChange={(e) => setHoras(e.target.value)}
-                className="w-full h-11 rounded-xl border border-gray-600 bg-gray-700 text-white px-3 outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 transition"
-                required
-              />
-              <p className="mt-2 text-xs text-gray-500">
-                Este tiempo se sumará a la hora de despegue y aterrizaje actual.
-              </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label
+                  htmlFor="delayHours"
+                  className="block mb-2 text-sm font-medium text-gray-300"
+                >
+                  Horas
+                </label>
+                <input
+                  type="number"
+                  id="delayHours"
+                  min="0"
+                  value={delayHours}
+                  onChange={(e) => setDelayHours(e.target.value)}
+                  className="w-full h-11 rounded-xl border border-gray-600 bg-gray-700 text-white px-3 outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 transition"
+                  required
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="delayMinutes"
+                  className="block mb-2 text-sm font-medium text-gray-300"
+                >
+                  Minutos
+                </label>
+                <input
+                  type="number"
+                  id="delayMinutes"
+                  min="0"
+                  max="59"
+                  value={delayMinutes}
+                  onChange={(e) => setDelayMinutes(e.target.value)}
+                  className="w-full h-11 rounded-xl border border-gray-600 bg-gray-700 text-white px-3 outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 transition"
+                  required
+                />
+              </div>
             </div>
+            <p className="text-xs text-gray-500">
+              Este tiempo se sumará a la hora de despegue y aterrizaje actual (UTC).
+            </p>
 
             {error && (
               <div className="p-3 rounded-xl bg-red-900/20 border border-red-800 text-red-200 text-sm flex items-start gap-2">
