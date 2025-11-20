@@ -14,7 +14,7 @@ export default function DetalleVuelo() {
   const flight = location.state?.flight;
   //console.log(flight);
 
-  const [showBtnSave, setShowBtnSave] = useState(false)
+
   const [flightStatus, setFlightStatus] = useState(flight.estadoVuelo);
   const [isLoading, setIsLoading] = useState(false);
   const { isAuthenticated, loading, user } = useSelector(state => state.auth)
